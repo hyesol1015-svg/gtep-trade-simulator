@@ -1,5 +1,8 @@
 .start-screen,
 .mission-screen,
+.market-screen,
+.product-screen,
+.decision-screen,
 .price-screen,
 .ad-budget-screen,
 .performance-screen,
@@ -46,6 +49,9 @@
 
 .start-card,
 .mission-card,
+.market-card,
+.product-card,
+.decision-card,
 .price-card,
 .ad-budget-card,
 .performance-card,
@@ -73,13 +79,16 @@
 }
 
 .start-card {
-  max-width: 440px;
+  max-width: 480px;
 }
 
 .mission-card {
   max-width: 480px;
 }
 
+.market-card,
+.product-card,
+.decision-card,
 .price-card,
 .ad-budget-card,
 .performance-card,
@@ -713,6 +722,9 @@
 @media (max-width: 420px) {
   .start-card,
   .mission-card,
+  .market-card,
+  .product-card,
+  .decision-card,
   .price-card,
   .ad-budget-card,
   .performance-card,
@@ -725,5 +737,405 @@
 
   .choice-card {
     padding: 14px;
+  }
+}
+
+.market-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .market-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.market-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  padding: 16px 14px;
+  border-radius: 16px;
+  background: rgba(148, 197, 255, 0.05);
+  border: 1px solid rgba(148, 197, 255, 0.14);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+
+.market-option:hover {
+  border-color: rgba(125, 211, 252, 0.5);
+  background: rgba(125, 211, 252, 0.08);
+  transform: translateY(-2px);
+}
+
+.market-option:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.market-option:focus-visible {
+  outline: 2px solid #fbbf24;
+  outline-offset: 3px;
+}
+
+.market-option--selected {
+  border-color: rgba(125, 211, 252, 0.65);
+  background: rgba(125, 211, 252, 0.12);
+  box-shadow: 0 0 0 1px rgba(125, 211, 252, 0.35) inset;
+  transform: scale(1.02);
+}
+
+.market-option__check {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #061019;
+  background: linear-gradient(135deg, #7dd3fc 0%, #38bdf8 45%, #fbbf24 130%);
+}
+
+.market-option__flag {
+  width: 36px;
+  height: 24px;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
+  margin-bottom: 2px;
+}
+
+.market-option__name {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: #f5f8ff;
+}
+
+.market-option__name-ko {
+  font-size: 12px;
+  font-weight: 600;
+  color: #7dd3fc;
+}
+
+.market-option__desc {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #9fb0cc;
+}
+
+.market-option__strategy {
+  margin-top: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #fbbf24;
+}
+
+.result-panel__flag {
+  width: 22px;
+  height: 15px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
+  vertical-align: -2px;
+  margin-right: 6px;
+}
+
+/* ---- 7단계: 게임 HUD / 진행률 / 전략 효과 토스트 ---- */
+
+.mission-hud {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mission-hud__grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.mission-hud__turn {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: rgba(148, 197, 255, 0.05);
+  border: 1px solid rgba(148, 197, 255, 0.14);
+}
+
+.mission-hud__turn-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #7dd3fc;
+}
+
+.mission-hud__progress {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(148, 197, 255, 0.12);
+  overflow: hidden;
+}
+
+.mission-hud__progress-bar {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #7dd3fc 0%, #38bdf8 45%, #fbbf24 130%);
+  transition: width 0.3s ease;
+}
+
+.final-market-status {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.effect-toast {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(19, 28, 48, 0.95), rgba(10, 16, 30, 0.96));
+  border: 1px solid rgba(125, 211, 252, 0.4);
+  box-shadow: 0 12px 24px -14px rgba(0, 0, 0, 0.5);
+  text-align: left;
+  overflow: hidden;
+  animation: effect-toast-pop 2.4s ease forwards;
+}
+
+.effect-toast__badge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  color: #fbbf24;
+}
+
+.effect-toast__summary {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #9fb0cc;
+}
+
+.effect-toast__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #f5f8ff;
+}
+
+.effect-toast__delta--up {
+  color: #4ade80;
+}
+
+.effect-toast__delta--down {
+  color: #f87171;
+}
+
+@keyframes effect-toast-pop {
+  0% {
+    opacity: 0;
+    max-height: 0;
+    padding: 0 16px;
+    transform: translateY(-6px);
+  }
+  8% {
+    opacity: 1;
+    max-height: 220px;
+    padding: 12px 16px;
+    transform: translateY(0);
+  }
+  82% {
+    opacity: 1;
+    max-height: 220px;
+    padding: 12px 16px;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    max-height: 0;
+    padding: 0 16px;
+    transform: translateY(-4px);
+  }
+}
+
+@media (max-width: 320px) {
+  .mission-hud__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- 9-1단계: START 화면 전용 CSS ----
+   기존 클래스(.start-screen/.start-card/.brand/.description/.start-button 등)는
+   그대로 재사용하고, 여기 추가되는 클래스는 전부 START 화면에서만 쓰이는
+   새 클래스라 다른 화면 스타일에는 영향이 없다. */
+
+.start-hero__subtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  color: #fbbf24;
+  text-align: center;
+  animation: start-fade-in 0.5s ease 0.1s both;
+}
+
+.start-mission-card,
+.start-market-preview,
+.start-budget {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: rgba(148, 197, 255, 0.05);
+  border: 1px solid rgba(148, 197, 255, 0.14);
+  animation: start-fade-in 0.5s ease both;
+}
+
+.start-mission-card {
+  animation-delay: 0.15s;
+}
+
+.start-market-preview {
+  animation-delay: 0.22s;
+}
+
+.start-budget {
+  animation-delay: 0.29s;
+}
+
+.start-mission-card__badge,
+.start-market-preview__label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #7dd3fc;
+}
+
+.start-mission-card__text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #f5f8ff;
+  text-align: center;
+}
+
+.start-market-preview__grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.start-market-preview__item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 8px;
+  border-radius: 12px;
+  background: rgba(148, 197, 255, 0.06);
+  border: 1px solid rgba(148, 197, 255, 0.12);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #f5f8ff;
+  text-align: center;
+}
+
+.start-market-preview__flag {
+  width: 20px;
+  height: 14px;
+  flex-shrink: 0;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+.start-budget__label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #7dd3fc;
+}
+
+.start-budget__value {
+  font-size: clamp(20px, 5vw, 26px);
+  font-weight: 800;
+  color: #f5f8ff;
+}
+
+.start-game-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  animation: start-fade-in 0.5s ease 0.36s both;
+}
+
+.start-game-button__arrow {
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+
+.start-game-button:hover .start-game-button__arrow {
+  transform: translateX(4px);
+}
+
+.start-footer {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  line-height: 1.7;
+  color: #64748b;
+  text-align: center;
+  animation: start-fade-in 0.5s ease 0.42s both;
+}
+
+@keyframes start-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .start-market-preview__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 320px) {
+  .start-market-preview__grid {
+    grid-template-columns: 1fr;
   }
 }
