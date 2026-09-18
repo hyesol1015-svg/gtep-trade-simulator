@@ -638,6 +638,34 @@
   }
 }
 
+/* ---- Phase 9: 선택지 카드(TURN 전략/PRODUCT SELECT/BUYER'S NEXT MOVE)가
+   한꺼번에 나타나지 않고 순서대로 등장하도록 짧게 stagger한다. 새
+   keyframe 없이 기존 turn-fade-in을 재사용하며, hover/active/selected/
+   disabled 등 기존 상태 스타일이나 클릭 로직은 전혀 건드리지 않는다. */
+.choice-list .choice-card,
+.choice-list .buyer-move-card {
+  animation: turn-fade-in 0.3s ease both;
+}
+
+.choice-list .choice-card:nth-child(1),
+.choice-list .buyer-move-card:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.choice-list .choice-card:nth-child(2),
+.choice-list .buyer-move-card:nth-child(2) {
+  animation-delay: 0.12s;
+}
+
+.choice-list .choice-card:nth-child(3),
+.choice-list .buyer-move-card:nth-child(3) {
+  animation-delay: 0.19s;
+}
+
+.choice-list .choice-card:nth-child(4) {
+  animation-delay: 0.26s;
+}
+
 .choice-card--selected::after {
   content: '\2713';
   position: absolute;
@@ -2130,6 +2158,44 @@
 
 .performance-card .start-button {
   animation: turn-fade-in 0.35s ease 0.35s both;
+}
+
+/* ---- Phase 9: CONTRACT OUTCOME 상태별 연출 차별화. outcome 판정이나
+   mission-badge--success/continues/rejected의 색상 체계는 그대로 두고,
+   이미 있는 buyer-score-reveal 등장 애니메이션 위에 상태별 flourish를
+   하나씩만 더한다(성공: 은은한 glow 1회 / 협상 지속: 부드러운 breathing
+   반복 / 거절: 추가 연출 없이 정착). confetti나 과한 효과는 사용하지
+   않는다. */
+.performance-card .mission-badge--success {
+  animation:
+    buyer-score-reveal 0.35s ease 0.05s both,
+    outcome-success-glow 1s ease 0.45s 1;
+}
+
+.performance-card .mission-badge--continues {
+  animation:
+    buyer-score-reveal 0.35s ease 0.05s both,
+    outcome-continues-breathe 1.8s ease-in-out 0.5s infinite;
+}
+
+@keyframes outcome-success-glow {
+  0%,
+  100% {
+    box-shadow: none;
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(74, 222, 128, 0.28);
+  }
+}
+
+@keyframes outcome-continues-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.035);
+  }
 }
 
 /* ---- 9. EXPORT PERFORMANCE: 성사 시 핵심 숫자 강조 / 결렬 시 놓친
