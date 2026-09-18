@@ -645,15 +645,17 @@
     box-shadow 0.15s ease;
 }
 
-.choice-card:hover {
-  border-color: rgba(37, 99, 235, 0.5);
-  background: rgba(37, 99, 235, 0.08);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 24px -14px rgba(37, 99, 235, 0.55);
-}
+@media (hover: hover) and (pointer: fine) {
+  .choice-card:hover {
+    border-color: rgba(37, 99, 235, 0.5);
+    background: rgba(37, 99, 235, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px -14px rgba(37, 99, 235, 0.55);
+  }
 
-.choice-card:hover .choice-card__key-effect {
-  filter: brightness(1.15);
+  .choice-card:hover .choice-card__key-effect {
+    filter: brightness(1.15);
+  }
 }
 
 .choice-card:active {
@@ -960,10 +962,12 @@
     filter 0.15s ease;
 }
 
-.start-button:hover {
-  filter: brightness(1.06);
-  transform: translateY(-2px);
-  box-shadow: 0 18px 34px -10px rgba(37, 99, 235, 0.65);
+@media (hover: hover) and (pointer: fine) {
+  .start-button:hover {
+    filter: brightness(1.06);
+    transform: translateY(-2px);
+    box-shadow: 0 18px 34px -10px rgba(37, 99, 235, 0.65);
+  }
 }
 
 .start-button:active {
@@ -1011,11 +1015,13 @@
     transform 0.15s ease;
 }
 
-.back-button:hover {
-  color: #1E293B;
-  border-color: rgba(30, 41, 59, 0.32);
-  background: rgba(30, 41, 59, 0.08);
-  transform: translateX(-2px);
+@media (hover: hover) and (pointer: fine) {
+  .back-button:hover {
+    color: #1E293B;
+    border-color: rgba(30, 41, 59, 0.32);
+    background: rgba(30, 41, 59, 0.08);
+    transform: translateX(-2px);
+  }
 }
 
 .back-button:active {
@@ -1402,19 +1408,23 @@
   transition: opacity 0.15s ease;
 }
 
-.market-option:hover::before {
-  opacity: 0.85;
+@media (hover: hover) and (pointer: fine) {
+  .market-option:hover::before {
+    opacity: 0.85;
+  }
 }
 
 .market-option--selected::before {
   opacity: 1;
 }
 
-.market-option:hover {
-  border-color: rgba(37, 99, 235, 0.5);
-  background: rgba(37, 99, 235, 0.08);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 24px -14px rgba(37, 99, 235, 0.55);
+@media (hover: hover) and (pointer: fine) {
+  .market-option:hover {
+    border-color: rgba(37, 99, 235, 0.5);
+    background: rgba(37, 99, 235, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px -14px rgba(37, 99, 235, 0.55);
+  }
 }
 
 .market-option:active {
@@ -1586,9 +1596,11 @@
   transition: transform 0.15s ease, border-color 0.15s ease;
 }
 
-.mission-hud .stat-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(37, 99, 235, 0.35);
+@media (hover: hover) and (pointer: fine) {
+  .mission-hud .stat-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(37, 99, 235, 0.35);
+  }
 }
 
 /* ---- 9-3단계: 값이 실제로 바뀐 순간에만 짧게 강조되는 stat 카드 펄스.
@@ -1878,8 +1890,10 @@
   transition: transform 0.15s ease;
 }
 
-.start-game-button:hover .start-game-button__arrow {
-  transform: translateX(4px);
+@media (hover: hover) and (pointer: fine) {
+  .start-game-button:hover .start-game-button__arrow {
+    transform: translateX(4px);
+  }
 }
 
 .start-footer {
@@ -1945,8 +1959,10 @@
   filter: saturate(0.7);
 }
 
-.choice-card--muted:hover {
-  opacity: 0.8;
+@media (hover: hover) and (pointer: fine) {
+  .choice-card--muted:hover {
+    opacity: 0.8;
+  }
 }
 
 /* ---- 2. TURN HUD 강화: 현재 턴은 더 크게, 완료는 톤 다운, 남은 턴은
@@ -2106,15 +2122,17 @@
   transition: transform 0.15s ease;
 }
 
-.buyer-move-card:hover {
-  border-color: rgba(37, 99, 235, 0.5);
-  background: rgba(37, 99, 235, 0.08);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 24px -14px rgba(37, 99, 235, 0.55);
-}
+@media (hover: hover) and (pointer: fine) {
+  .buyer-move-card:hover {
+    border-color: rgba(37, 99, 235, 0.5);
+    background: rgba(37, 99, 235, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px -14px rgba(37, 99, 235, 0.55);
+  }
 
-.buyer-move-card:hover .buyer-move-card__arrow {
-  transform: translateX(4px);
+  .buyer-move-card:hover .buyer-move-card__arrow {
+    transform: translateX(4px);
+  }
 }
 
 .buyer-move-card:active {
@@ -2342,6 +2360,26 @@
   gap: 12px;
 }
 
+/* ---- Phase 10: 태블릿/중간 화면(640~1199px) 폭 활용. 컬럼 구조나
+   레이아웃 방향은 그대로 두고(2컬럼 전환은 여전히 1200px부터), 좁은
+   모바일 폭(480/560px)에 그대로 갇혀 있던 카드 최대폭만 넓혀 넓은
+   화면에서 카드가 작게 붕 떠 보이지 않게 한다. ---- */
+@media (min-width: 640px) {
+  .start-card,
+  .mission-card {
+    max-width: 640px;
+  }
+
+  .market-card,
+  .product-card,
+  .decision-card,
+  .performance-card,
+  .buyer-card,
+  .final-result-card {
+    max-width: 720px;
+  }
+}
+
 @media (min-width: 1200px) {
   .start-card {
     max-width: 960px;
@@ -2514,14 +2552,18 @@
   filter: saturate(0.8);
 }
 
-.market-option--muted:hover {
-  opacity: 0.92;
-  filter: saturate(0.95);
+@media (hover: hover) and (pointer: fine) {
+  .market-option--muted:hover {
+    opacity: 0.92;
+    filter: saturate(0.95);
+  }
 }
 
 /* ---- MARKET SELECT: 카드 hover를 조금 더 또렷하게(게임 타일 느낌) ---- */
-.market-option:hover {
-  transform: translateY(-3px);
+@media (hover: hover) and (pointer: fine) {
+  .market-option:hover {
+    transform: translateY(-3px);
+  }
 }
 
 /* ---- PRODUCT SELECT: 상품 카드 전용 톤(다른 화면의 .choice-card는
@@ -2542,9 +2584,11 @@
   font-size: 16px;
 }
 
-.product-card .choice-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 28px -14px rgba(37, 99, 235, 0.6);
+@media (hover: hover) and (pointer: fine) {
+  .product-card .choice-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px -14px rgba(37, 99, 235, 0.6);
+  }
 }
 
 .product-card .choice-card--selected {
