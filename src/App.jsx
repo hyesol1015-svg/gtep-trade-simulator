@@ -3292,6 +3292,21 @@ function FinalResultScreen({ scores, market, product, selections, budget, initia
 
         <h1 className="price-title">FINAL RESULT</h1>
 
+        {/* ---- Lv2-8: FINAL RESULT HERO. 화면에 들어오자마자 결과를 바로
+            인식할 수 있도록 완료 헤드라인 + CONTRACT OUTCOME 배지를 화면
+            맨 위로 옮긴다. 새 판정 로직 없이 기존 contractOutcome 값과
+            mission-badge--success/continues/rejected 문구를 그대로
+            재사용할 뿐이다. ---- */}
+        <p className="final-result-hero">&#127942; EXPORT MISSION COMPLETE</p>
+
+        {contractOutcome && (
+          <span className={`mission-badge mission-badge--${contractOutcome}`}>
+            {contractOutcome === 'success' && '\u{1F7E2} DEAL SUCCESSFUL'}
+            {contractOutcome === 'continues' && '\u{1F7E1} NEGOTIATION CONTINUES'}
+            {contractOutcome === 'rejected' && '\u{1F534} DEAL REJECTED'}
+          </span>
+        )}
+
         <span className="mission-badge">{market.name} MARKET PERFORMANCE</span>
 
         <p className="price-lead">{market.name} 시장 진출 전략이 완료되었습니다.</p>
@@ -3322,14 +3337,20 @@ function FinalResultScreen({ scores, market, product, selections, budget, initia
           )}
         </dl>
 
+        {/* ---- Lv2-8: PERFORMANCE BREAKDOWN. SCORE_LABELS/scores 값과 기존
+            +72/-5 표시 방식은 그대로 두고, 9단계에서 이미 만든
+            AnimatedStatCard의 progress bar 기능만 재사용해 게이지로도
+            함께 보여준다. progress는 scores[key]를 0~100으로 clamp한
+            표시용 값일 뿐, scores 자체는 전혀 변경하지 않는다. ---- */}
         <div className="stat-grid">
           {Object.entries(SCORE_LABELS).map(([key, label]) => (
-            <div key={key} className="stat-card">
-              <span className="stat-card__label">{label}</span>
-              <span className="stat-card__value">
-                {scores[key] >= 0 ? `+${scores[key]}` : scores[key]}
-              </span>
-            </div>
+            <AnimatedStatCard
+              key={key}
+              label={label}
+              value={scores[key]}
+              format={(v) => (v >= 0 ? `+${v}` : v)}
+              progress={clampValue(scores[key], 0, 100)}
+            />
           ))}
         </div>
 
@@ -3339,15 +3360,13 @@ function FinalResultScreen({ scores, market, product, selections, budget, initia
             {totalScore}
             <span className="total-score__max"> / 100</span>
           </span>
+          {/* ---- Lv2-8: TOTAL SCORE 진행률 바. 기존 calculateFinalScore
+              결과(totalScore, 0~100)를 그대로 너비로만 쓸 뿐 점수 계산에는
+              전혀 관여하지 않는다. ---- */}
+          <div className="total-score__bar" role="presentation">
+            <div className="total-score__bar-fill" style={{ width: `${totalScore}%` }} />
+          </div>
         </div>
-
-        {contractOutcome && (
-          <span className={`mission-badge mission-badge--${contractOutcome}`}>
-            {contractOutcome === 'success' && '\u{1F7E2} DEAL SUCCESSFUL'}
-            {contractOutcome === 'continues' && '\u{1F7E1} NEGOTIATION CONTINUES'}
-            {contractOutcome === 'rejected' && '\u{1F534} DEAL REJECTED'}
-          </span>
-        )}
 
         <div className="final-result-layout">
         <div className="final-result-layout__left">
@@ -3459,6 +3478,26 @@ function FinalResultScreen({ scores, market, product, selections, budget, initia
 
         </div>
         <div className="final-result-layout__right">
+        {/* ---- Lv2-8: BUYER RESULT. Lv2-7에서 이미 만든 buyer 데이터/
+            BuyerIdentityCard/getBuyerComment를 그대로 재사용해 "이번 판
+            누구와 거래했고 그 바이어가 마지막에 뭐라고 했는지"만 보여준다.
+            새 Buyer 데이터나 새 판정 로직은 전혀 추가하지 않는다. ---- */}
+        {buyer && (
+          <div className="final-buyer-result">
+            <span className="price-step">BUYER RESULT</span>
+            <BuyerIdentityCard
+              market={market}
+              profile={MARKET_PROFILES[market.id]}
+              accent={MARKET_ACCENT[market.id]}
+              buyerType={buyer}
+            />
+            <div className="reaction-panel">
+              <span className="ai-feedback-panel__label">FINAL RESPONSE</span>
+              <p>{getBuyerComment(market, product, buyerInterestScore, buyer)}</p>
+            </div>
+          </div>
+        )}
+
         <div className="strategy-summary">
           <span className="price-step">YOUR STRATEGY</span>
           <div className="strategy-list">
