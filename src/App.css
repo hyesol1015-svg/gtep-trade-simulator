@@ -1,3 +1,20 @@
+:root {
+  --bg-base: #F7F4EC;
+  --bg-card: #FFFFFF;
+  --color-primary: #2563EB;
+  --color-secondary: #7C3AED;
+  --color-accent: #F59E0B;
+  --color-success: #22C55E;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --text-primary: #1E293B;
+  --text-muted: #64748B;
+  --radius-card: 20px;
+  --radius-chip: 999px;
+  --shadow-card: 0 12px 28px -8px rgba(30, 41, 59, 0.16);
+  --shadow-card-hover: 0 16px 32px -6px rgba(30, 41, 59, 0.22);
+}
+
 .start-screen,
 .mission-screen,
 .market-screen,
@@ -15,9 +32,9 @@
   overflow: hidden;
   padding: 24px;
   background:
-    radial-gradient(circle at 18% 20%, rgba(56, 189, 248, 0.16), transparent 45%),
-    radial-gradient(circle at 82% 78%, rgba(251, 191, 36, 0.12), transparent 50%),
-    linear-gradient(160deg, #060a14 0%, #0b1526 55%, #0a1220 100%);
+    radial-gradient(circle at 18% 20%, rgba(37, 99, 235, 0.07), transparent 45%),
+    radial-gradient(circle at 82% 78%, rgba(245, 158, 11, 0.06), transparent 50%),
+    linear-gradient(160deg, #FBF7EE 0%, #F5EFE1 55%, #F1E9D8 100%);
 }
 
 .screen__glow {
@@ -25,7 +42,7 @@
   inset: -20%;
   background: radial-gradient(
     circle at 50% 30%,
-    rgba(56, 189, 248, 0.14) 0%,
+    rgba(37, 99, 235, 0.05) 0%,
     transparent 55%
   );
   pointer-events: none;
@@ -36,8 +53,8 @@
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(148, 197, 255, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148, 197, 255, 0.06) 1px, transparent 1px);
+    linear-gradient(rgba(30, 41, 59, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 41, 59, 0.06) 1px, transparent 1px);
   background-size: 42px 42px;
   mask-image: radial-gradient(circle at 50% 40%, black 0%, transparent 75%);
   pointer-events: none;
@@ -62,13 +79,12 @@
   gap: clamp(16px, 3vw, 22px);
   padding: clamp(32px, 6vw, 48px) clamp(24px, 5vw, 40px);
   border-radius: 24px;
-  background: linear-gradient(180deg, rgba(19, 28, 48, 0.85), rgba(10, 16, 30, 0.9));
-  border: 1px solid rgba(148, 197, 255, 0.16);
+  background: #FFFFFF;
+  border: 1px solid rgba(30, 41, 59, 0.08);
   box-shadow:
-    0 30px 60px -20px rgba(0, 0, 0, 0.55),
-    0 0 0 1px rgba(255, 255, 255, 0.02) inset,
-    0 0 80px -30px rgba(56, 189, 248, 0.35);
-  backdrop-filter: blur(6px);
+    0 20px 45px -20px rgba(30, 41, 59, 0.18),
+    0 1px 0 rgba(255, 255, 255, 0.6) inset;
+  backdrop-filter: none;
   animation: screen-in 0.35s ease both;
 }
 
@@ -135,11 +151,11 @@
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.42em;
-  color: #7dd3fc;
+  color: #2563EB;
   padding: 6px 14px;
-  border: 1px solid rgba(125, 211, 252, 0.35);
+  border: 1px solid rgba(37, 99, 235, 0.35);
   border-radius: 999px;
-  background: rgba(125, 211, 252, 0.08);
+  background: rgba(37, 99, 235, 0.08);
 }
 
 .brand__title {
@@ -148,7 +164,7 @@
   font-weight: 800;
   letter-spacing: 0.06em;
   line-height: 1.15;
-  background: linear-gradient(135deg, #ffffff 0%, #a9d8ff 55%, #7dd3fc 100%);
+  background: linear-gradient(135deg, #1D4ED8 0%, #2563EB 50%, #1E40AF 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -158,14 +174,14 @@
   margin: 0;
   font-size: clamp(14px, 3.4vw, 16px);
   line-height: 1.6;
-  color: #9fb0cc;
+  color: #64748B;
 }
 
 .mission-badge {
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.42em;
-  color: #fbbf24;
+  color: #D97706;
   padding: 6px 14px;
   border: 1px solid rgba(251, 191, 36, 0.35);
   border-radius: 999px;
@@ -190,7 +206,7 @@
   font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.08em;
-  color: #34d399;
+  color: #059669;
 }
 
 .ai-feedback-panel__subtitle {
@@ -198,7 +214,7 @@
   font-size: 13px;
   line-height: 1.6;
   font-style: italic;
-  color: #9fb0cc;
+  color: #64748B;
 }
 
 .ai-feedback-panel__section {
@@ -212,7 +228,7 @@
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.2em;
-  color: #34d399;
+  color: #059669;
 }
 
 .mission-title {
@@ -225,7 +241,7 @@
   font-weight: 800;
   letter-spacing: 0.02em;
   line-height: 1.25;
-  color: #f5f8ff;
+  color: #1E293B;
 }
 
 .mission-title__flag {
@@ -246,7 +262,7 @@
   margin: 0;
   font-size: clamp(14px, 3.4vw, 16px);
   line-height: 1.6;
-  color: #9fb0cc;
+  color: #64748B;
 }
 
 .mission-info {
@@ -257,8 +273,8 @@
   gap: 10px;
   padding: 16px 18px;
   border-radius: 16px;
-  background: rgba(148, 197, 255, 0.05);
-  border: 1px solid rgba(148, 197, 255, 0.14);
+  background: rgba(30, 41, 59, 0.05);
+  border: 1px solid rgba(30, 41, 59, 0.14);
 }
 
 /* ---- 9-2단계: MISSION OBJECTIVE 카드 ---- */
@@ -280,14 +296,14 @@
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.2em;
-  color: #fbbf24;
+  color: #D97706;
 }
 
 .mission-objective__text {
   margin: 0;
   font-size: 14px;
   line-height: 1.6;
-  color: #f5f8ff;
+  color: #1E293B;
 }
 
 .mission-objective__targets {
@@ -312,13 +328,13 @@
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.1em;
-  color: #fbbf24;
+  color: #D97706;
 }
 
 .mission-objective__target-value {
   font-size: 14px;
   font-weight: 800;
-  color: #f5f8ff;
+  color: #1E293B;
 }
 
 /* 턴별 결정 화면에서 쓰는 컴팩트 버전 — targets 그리드 없이 배지+문구만.
@@ -342,21 +358,21 @@
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.14em;
-  color: #7dd3fc;
+  color: #2563EB;
 }
 
 .mission-info__row dd {
   margin: 0;
   font-size: 15px;
   font-weight: 700;
-  color: #f5f8ff;
+  color: #1E293B;
 }
 
 .price-step {
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.3em;
-  color: #9fb0cc;
+  color: #64748B;
 }
 
 .price-title {
@@ -364,21 +380,21 @@
   font-size: clamp(24px, 5.5vw, 32px);
   font-weight: 800;
   letter-spacing: 0.02em;
-  color: #f5f8ff;
+  color: #1E293B;
 }
 
 .price-lead {
   margin: 0;
   font-size: clamp(14px, 3.4vw, 16px);
   line-height: 1.6;
-  color: #9fb0cc;
+  color: #64748B;
 }
 
 .price-question {
   margin: 0;
   font-size: clamp(16px, 3.8vw, 18px);
   font-weight: 700;
-  color: #f5f8ff;
+  color: #1E293B;
 }
 
 .choice-list {
@@ -395,8 +411,8 @@
   width: 100%;
   padding: 16px 18px;
   border-radius: 16px;
-  background: rgba(148, 197, 255, 0.05);
-  border: 1px solid rgba(148, 197, 255, 0.14);
+  background: rgba(30, 41, 59, 0.05);
+  border: 1px solid rgba(30, 41, 59, 0.14);
   color: inherit;
   font: inherit;
   text-align: left;
@@ -409,10 +425,10 @@
 }
 
 .choice-card:hover {
-  border-color: rgba(125, 211, 252, 0.5);
-  background: rgba(125, 211, 252, 0.08);
+  border-color: rgba(37, 99, 235, 0.5);
+  background: rgba(37, 99, 235, 0.08);
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px -14px rgba(56, 189, 248, 0.55);
+  box-shadow: 0 10px 24px -14px rgba(37, 99, 235, 0.55);
 }
 
 .choice-card:hover .choice-card__key-effect {
@@ -430,12 +446,12 @@
 
 .choice-card--selected {
   position: relative;
-  border-color: rgba(125, 211, 252, 0.65);
-  background: rgba(125, 211, 252, 0.12);
+  border-color: rgba(37, 99, 235, 0.9);
+  background: rgba(37, 99, 235, 0.07);
   transform: translateY(-2px);
   box-shadow:
-    0 0 0 1px rgba(125, 211, 252, 0.35) inset,
-    0 0 24px -8px rgba(125, 211, 252, 0.5);
+    0 0 0 1px rgba(37, 99, 235, 0.35) inset,
+    0 10px 22px -10px rgba(37, 99, 235, 0.35);
   animation: choice-select-pop 0.28s ease;
 }
 
@@ -494,12 +510,12 @@
 .choice-card__title {
   font-size: 15px;
   font-weight: 700;
-  color: #f5f8ff;
+  color: #1E293B;
 }
 
 .choice-card__subtitle {
   font-size: 13px;
-  color: #9fb0cc;
+  color: #64748B;
 }
 
 .choice-card__breakdown {
@@ -517,11 +533,11 @@
   justify-content: space-between;
   gap: 10px;
   font-size: 13px;
-  color: #9fb0cc;
+  color: #64748B;
 }
 
 .choice-card__breakdown li span:first-child {
-  color: #7dd3fc;
+  color: #2563EB;
   font-weight: 600;
 }
 
@@ -529,12 +545,12 @@
    난이도/광고 난이도)의 유·불리를 색으로 구분한다. 값 자체나 판정 로직은
    그대로이며 표시 색상만 다르다. */
 .choice-card__breakdown-value--good {
-  color: #4ade80;
+  color: #16A34A;
   font-weight: 700;
 }
 
 .choice-card__breakdown-value--bad {
-  color: #f87171;
+  color: #DC2626;
   font-weight: 700;
 }
 
@@ -560,13 +576,13 @@
 }
 
 .choice-card__key-effect--up {
-  color: #4ade80;
+  color: #16A34A;
   background: rgba(74, 222, 128, 0.1);
   border: 1px solid rgba(74, 222, 128, 0.3);
 }
 
 .choice-card__key-effect--down {
-  color: #f87171;
+  color: #DC2626;
   background: rgba(248, 113, 113, 0.1);
   border: 1px solid rgba(248, 113, 113, 0.3);
 }
@@ -579,8 +595,8 @@
   gap: 10px;
   padding: 18px;
   border-radius: 16px;
-  background: rgba(56, 189, 248, 0.07);
-  border: 1px solid rgba(56, 189, 248, 0.24);
+  background: rgba(37, 99, 235, 0.07);
+  border: 1px solid rgba(37, 99, 235, 0.24);
   text-align: left;
   animation: screen-in 0.35s ease both;
 }
@@ -589,14 +605,14 @@
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.28em;
-  color: #7dd3fc;
+  color: #2563EB;
 }
 
 .result-panel__title {
   margin: 0;
   font-size: 17px;
   font-weight: 800;
-  color: #f5f8ff;
+  color: #1E293B;
 }
 
 .result-panel__desc {
@@ -609,7 +625,7 @@
   margin: 0;
   font-size: 13px;
   line-height: 1.6;
-  color: #9fb0cc;
+  color: #64748B;
 }
 
 .result-panel__scores {
@@ -628,15 +644,15 @@
   justify-content: space-between;
   font-size: 14px;
   font-weight: 700;
-  color: #f5f8ff;
+  color: #1E293B;
 }
 
 .result-panel__delta--up {
-  color: #4ade80;
+  color: #16A34A;
 }
 
 .result-panel__delta--down {
-  color: #f87171;
+  color: #DC2626;
 }
 
 .start-button {
@@ -651,7 +667,7 @@
   border: none;
   border-radius: 14px;
   cursor: pointer;
-  box-shadow: 0 14px 30px -10px rgba(56, 189, 248, 0.55);
+  box-shadow: 0 14px 30px -10px rgba(37, 99, 235, 0.55);
   transition:
     transform 0.15s ease,
     box-shadow 0.15s ease,
@@ -661,12 +677,12 @@
 .start-button:hover {
   filter: brightness(1.06);
   transform: translateY(-2px);
-  box-shadow: 0 18px 34px -10px rgba(56, 189, 248, 0.65);
+  box-shadow: 0 18px 34px -10px rgba(37, 99, 235, 0.65);
 }
 
 .start-button:active {
   transform: translateY(1px) scale(0.99);
-  box-shadow: 0 8px 18px -8px rgba(56, 189, 248, 0.5);
+  box-shadow: 0 8px 18px -8px rgba(37, 99, 235, 0.5);
 }
 
 .start-button:focus-visible {
@@ -686,7 +702,7 @@
 
 /* ---- 11단계: BACK 버튼. 메인 CTA(.start-button)보다 작고 조용한 보조
    버튼으로, 각 카드의 맨 위에 왼쪽 정렬로 배치된다. 색상 토큰(테두리/배경
-   rgba(148, 197, 255, ...), 텍스트 #9fb0cc)은 다른 화면의 보조 요소와
+   rgba(30, 41, 59, ...), 텍스트 #9fb0cc)은 다른 화면의 보조 요소와
    동일한 것을 재사용한다. */
 .back-button {
   align-self: flex-start;
@@ -697,9 +713,9 @@
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.06em;
-  color: #9fb0cc;
-  background: rgba(148, 197, 255, 0.04);
-  border: 1px solid rgba(148, 197, 255, 0.16);
+  color: #64748B;
+  background: rgba(30, 41, 59, 0.04);
+  border: 1px solid rgba(30, 41, 59, 0.16);
   border-radius: 999px;
   cursor: pointer;
   transition:
@@ -710,9 +726,9 @@
 }
 
 .back-button:hover {
-  color: #f5f8ff;
-  border-color: rgba(148, 197, 255, 0.32);
-  background: rgba(148, 197, 255, 0.08);
+  color: #1E293B;
+  border-color: rgba(30, 41, 59, 0.32);
+  background: rgba(30, 41, 59, 0.08);
   transform: translateX(-2px);
 }
 
@@ -721,7 +737,7 @@
 }
 
 .back-button:focus-visible {
-  outline: 2px solid rgba(125, 211, 252, 0.6);
+  outline: 2px solid rgba(37, 99, 235, 0.6);
   outline-offset: 2px;
 }
 
@@ -740,8 +756,8 @@
   gap: 6px;
   padding: 14px 8px;
   border-radius: 14px;
-  background: rgba(148, 197, 255, 0.05);
-  border: 1px solid rgba(148, 197, 255, 0.14);
+  background: rgba(30, 41, 59, 0.05);
+  border: 1px solid rgba(30, 41, 59, 0.14);
   text-align: center;
 }
 
@@ -749,13 +765,13 @@
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.06em;
-  color: #7dd3fc;
+  color: #2563EB;
 }
 
 .stat-card__value {
   font-size: clamp(15px, 4vw, 18px);
   font-weight: 800;
-  color: #f5f8ff;
+  color: #1E293B;
 }
 
 .reaction-panel {
@@ -765,8 +781,8 @@
   gap: 6px;
   padding: 14px 16px;
   border-radius: 14px;
-  background: rgba(148, 197, 255, 0.05);
-  border: 1px solid rgba(148, 197, 255, 0.14);
+  background: rgba(30, 41, 59, 0.05);
+  border: 1px solid rgba(30, 41, 59, 0.14);
   text-align: left;
 }
 
@@ -774,7 +790,7 @@
   margin: 0;
   font-size: 13px;
   line-height: 1.6;
-  color: #9fb0cc;
+  color: #64748B;
 }
 
 .total-score {
@@ -786,11 +802,11 @@
   border-radius: 20px;
   background: linear-gradient(
     135deg,
-    rgba(125, 211, 252, 0.14),
+    rgba(37, 99, 235, 0.14),
     rgba(251, 191, 36, 0.1)
   );
-  border: 1px solid rgba(125, 211, 252, 0.32);
-  box-shadow: 0 0 60px -20px rgba(56, 189, 248, 0.4);
+  border: 1px solid rgba(37, 99, 235, 0.32);
+  box-shadow: 0 0 60px -20px rgba(37, 99, 235, 0.4);
 }
 
 /* ---- 9-3단계: BUYER RESPONSE 전환 ----
@@ -816,14 +832,14 @@
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.32em;
-  color: #7dd3fc;
+  color: #2563EB;
 }
 
 .total-score__value {
   font-size: clamp(40px, 12vw, 56px);
   font-weight: 900;
   line-height: 1;
-  background: linear-gradient(135deg, #ffffff 0%, #a9d8ff 55%, #7dd3fc 100%);
+  background: linear-gradient(135deg, #1D4ED8 0%, #2563EB 50%, #1E40AF 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -832,7 +848,7 @@
 .total-score__max {
   font-size: clamp(16px, 4vw, 20px);
   font-weight: 700;
-  color: #9fb0cc;
+  color: #64748B;
 }
 
 .strategy-summary {
@@ -850,8 +866,8 @@
   gap: 12px;
   padding: 16px 18px;
   border-radius: 16px;
-  background: rgba(148, 197, 255, 0.05);
-  border: 1px solid rgba(148, 197, 255, 0.14);
+  background: rgba(30, 41, 59, 0.05);
+  border: 1px solid rgba(30, 41, 59, 0.14);
   text-align: left;
 }
 
@@ -865,14 +881,14 @@
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.1em;
-  color: #7dd3fc;
+  color: #2563EB;
 }
 
 .strategy-row__value {
   font-size: 14px;
   font-weight: 700;
   line-height: 1.5;
-  color: #f5f8ff;
+  color: #1E293B;
 }
 
 @media (max-width: 480px) {
@@ -927,8 +943,8 @@
   gap: 6px;
   padding: 16px 14px;
   border-radius: 16px;
-  background: rgba(148, 197, 255, 0.05);
-  border: 1px solid rgba(148, 197, 255, 0.14);
+  background: rgba(30, 41, 59, 0.05);
+  border: 1px solid rgba(30, 41, 59, 0.14);
   color: inherit;
   font: inherit;
   cursor: pointer;
@@ -939,10 +955,10 @@
 }
 
 .market-option:hover {
-  border-color: rgba(125, 211, 252, 0.5);
-  background: rgba(125, 211, 252, 0.08);
+  border-color: rgba(37, 99, 235, 0.5);
+  background: rgba(37, 99, 235, 0.08);
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px -14px rgba(56, 189, 248, 0.55);
+  box-shadow: 0 10px 24px -14px rgba(37, 99, 235, 0.55);
 }
 
 .market-option:active {
@@ -959,11 +975,11 @@
    느껴지도록 통일한다. 이 카드의 기존 정지 상태 transform(scale(1.02))에
    맞춘 전용 pop 애니메이션만 추가했다 — 선택 판정 로직은 변경하지 않음. */
 .market-option--selected {
-  border-color: rgba(125, 211, 252, 0.65);
-  background: rgba(125, 211, 252, 0.12);
+  border-color: rgba(37, 99, 235, 0.9);
+  background: rgba(37, 99, 235, 0.07);
   box-shadow:
-    0 0 0 1px rgba(125, 211, 252, 0.35) inset,
-    0 0 24px -8px rgba(125, 211, 252, 0.5);
+    0 0 0 1px rgba(37, 99, 235, 0.35) inset,
+    0 10px 22px -10px rgba(37, 99, 235, 0.35);
   transform: scale(1.02);
   animation: market-select-pop 0.28s ease;
 }
@@ -1008,19 +1024,19 @@
   font-size: 14px;
   font-weight: 800;
   letter-spacing: 0.03em;
-  color: #f5f8ff;
+  color: #1E293B;
 }
 
 .market-option__name-ko {
   font-size: 12px;
   font-weight: 600;
-  color: #7dd3fc;
+  color: #2563EB;
 }
 
 .market-option__desc {
   font-size: 11.5px;
   line-height: 1.5;
-  color: #9fb0cc;
+  color: #64748B;
 }
 
 .market-option__strategy {
@@ -1028,7 +1044,7 @@
   font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.06em;
-  color: #fbbf24;
+  color: #D97706;
 }
 
 .result-panel__flag {
@@ -1062,8 +1078,8 @@
   gap: 8px;
   padding: 10px 14px;
   border-radius: 12px;
-  background: rgba(148, 197, 255, 0.04);
-  border: 1px solid rgba(148, 197, 255, 0.12);
+  background: rgba(30, 41, 59, 0.04);
+  border: 1px solid rgba(30, 41, 59, 0.12);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.03em;
@@ -1073,7 +1089,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  color: #f5f8ff;
+  color: #1E293B;
 }
 
 .mission-hud__info-flag {
@@ -1085,7 +1101,7 @@
 }
 
 .mission-hud__info-sep {
-  color: #3c4a63;
+  color: #CBD5E1;
 }
 
 .mission-hud .stat-card {
@@ -1094,7 +1110,7 @@
 
 .mission-hud .stat-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(125, 211, 252, 0.35);
+  border-color: rgba(37, 99, 235, 0.35);
 }
 
 /* ---- 9-3단계: 값이 실제로 바뀐 순간에만 짧게 강조되는 stat 카드 펄스.
@@ -1106,7 +1122,7 @@
 @keyframes stat-pulse {
   0% {
     box-shadow: 0 0 0 0 rgba(251, 191, 36, 0);
-    border-color: rgba(148, 197, 255, 0.14);
+    border-color: rgba(30, 41, 59, 0.14);
   }
   30% {
     box-shadow: 0 0 0 6px rgba(251, 191, 36, 0.16);
@@ -1115,7 +1131,7 @@
   }
   100% {
     box-shadow: 0 0 0 0 rgba(251, 191, 36, 0);
-    border-color: rgba(148, 197, 255, 0.14);
+    border-color: rgba(30, 41, 59, 0.14);
     transform: scale(1);
   }
 }
@@ -1139,8 +1155,8 @@
   font-size: 12px;
   font-weight: 800;
   color: #64748b;
-  background: rgba(148, 197, 255, 0.06);
-  border: 1px solid rgba(148, 197, 255, 0.16);
+  background: rgba(30, 41, 59, 0.06);
+  border: 1px solid rgba(30, 41, 59, 0.16);
   transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -1174,15 +1190,15 @@
   gap: 6px;
   padding: 12px 16px;
   border-radius: 14px;
-  background: rgba(148, 197, 255, 0.05);
-  border: 1px solid rgba(148, 197, 255, 0.14);
+  background: rgba(30, 41, 59, 0.05);
+  border: 1px solid rgba(30, 41, 59, 0.14);
 }
 
 .mission-hud__turn-label {
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.14em;
-  color: #7dd3fc;
+  color: #2563EB;
 }
 
 .final-market-status {
@@ -1199,9 +1215,9 @@
   flex-direction: column;
   gap: 6px;
   border-radius: 14px;
-  background: linear-gradient(180deg, rgba(19, 28, 48, 0.95), rgba(10, 16, 30, 0.96));
-  border: 1px solid rgba(125, 211, 252, 0.4);
-  box-shadow: 0 12px 24px -14px rgba(0, 0, 0, 0.5);
+  background: #FFFFFF;
+  border: 1px solid rgba(37, 99, 235, 0.35);
+  box-shadow: 0 12px 24px -14px rgba(30, 41, 59, 0.22);
   text-align: left;
   overflow: hidden;
   animation: effect-toast-pop 2.4s ease forwards;
@@ -1211,14 +1227,14 @@
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.24em;
-  color: #fbbf24;
+  color: #D97706;
 }
 
 .effect-toast__summary {
   margin: 0;
   font-size: 13px;
   line-height: 1.5;
-  color: #9fb0cc;
+  color: #64748B;
 }
 
 .effect-toast__row {
@@ -1228,15 +1244,15 @@
   gap: 10px;
   font-size: 14px;
   font-weight: 700;
-  color: #f5f8ff;
+  color: #1E293B;
 }
 
 .effect-toast__delta--up {
-  color: #4ade80;
+  color: #16A34A;
 }
 
 .effect-toast__delta--down {
-  color: #f87171;
+  color: #DC2626;
 }
 
 @keyframes effect-toast-pop {
@@ -1282,7 +1298,7 @@
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.32em;
-  color: #fbbf24;
+  color: #D97706;
   text-align: center;
   animation: start-fade-in 0.5s ease 0.1s both;
 }
@@ -1297,8 +1313,8 @@
   gap: 10px;
   padding: 16px 18px;
   border-radius: 16px;
-  background: rgba(148, 197, 255, 0.05);
-  border: 1px solid rgba(148, 197, 255, 0.14);
+  background: rgba(30, 41, 59, 0.05);
+  border: 1px solid rgba(30, 41, 59, 0.14);
   animation: start-fade-in 0.5s ease both;
 }
 
@@ -1319,14 +1335,14 @@
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.18em;
-  color: #7dd3fc;
+  color: #2563EB;
 }
 
 .start-mission-card__text {
   margin: 0;
   font-size: 14px;
   line-height: 1.6;
-  color: #f5f8ff;
+  color: #1E293B;
   text-align: center;
 }
 
@@ -1344,12 +1360,12 @@
   gap: 6px;
   padding: 10px 8px;
   border-radius: 12px;
-  background: rgba(148, 197, 255, 0.06);
-  border: 1px solid rgba(148, 197, 255, 0.12);
+  background: rgba(30, 41, 59, 0.06);
+  border: 1px solid rgba(30, 41, 59, 0.12);
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.03em;
-  color: #f5f8ff;
+  color: #1E293B;
   text-align: center;
 }
 
@@ -1365,13 +1381,13 @@
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.18em;
-  color: #7dd3fc;
+  color: #2563EB;
 }
 
 .start-budget__value {
   font-size: clamp(20px, 5vw, 26px);
   font-weight: 800;
-  color: #f5f8ff;
+  color: #1E293B;
 }
 
 .start-game-button {
@@ -1440,7 +1456,7 @@
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.14em;
-  color: #4ade80;
+  color: #16A34A;
   padding: 6px 14px;
   border-radius: 999px;
   background: rgba(74, 222, 128, 0.1);
@@ -1465,9 +1481,9 @@
 }
 
 .turn-track__step--done .turn-track__dot {
-  color: #7dd3fc;
-  background: rgba(125, 211, 252, 0.14);
-  border-color: rgba(125, 211, 252, 0.3);
+  color: #2563EB;
+  background: rgba(37, 99, 235, 0.14);
+  border-color: rgba(37, 99, 235, 0.3);
   opacity: 0.75;
 }
 
@@ -1485,11 +1501,11 @@
 }
 
 .stat-card__direction--up {
-  color: #4ade80;
+  color: #16A34A;
 }
 
 .stat-card__direction--down {
-  color: #f87171;
+  color: #DC2626;
 }
 
 /* ---- 6. BUYER RESPONSE: 관심도 시각 미터 + 단계적 진입 연출 ---- */
@@ -1497,7 +1513,7 @@
   width: 100%;
   height: 10px;
   border-radius: 999px;
-  background: rgba(148, 197, 255, 0.12);
+  background: rgba(30, 41, 59, 0.12);
   overflow: hidden;
   animation: turn-fade-in 0.35s ease 0.25s both;
 }
@@ -1549,9 +1565,9 @@
   width: 100%;
   padding: 15px 20px;
   border-radius: 14px;
-  background: rgba(148, 197, 255, 0.05);
-  border: 1px solid rgba(148, 197, 255, 0.16);
-  color: #f5f8ff;
+  background: rgba(30, 41, 59, 0.05);
+  border: 1px solid rgba(30, 41, 59, 0.16);
+  color: #1E293B;
   font: inherit;
   font-size: 15px;
   font-weight: 800;
@@ -1567,15 +1583,15 @@
 
 .buyer-move-card__arrow {
   display: inline-block;
-  color: #7dd3fc;
+  color: #2563EB;
   transition: transform 0.15s ease;
 }
 
 .buyer-move-card:hover {
-  border-color: rgba(125, 211, 252, 0.5);
-  background: rgba(125, 211, 252, 0.08);
+  border-color: rgba(37, 99, 235, 0.5);
+  background: rgba(37, 99, 235, 0.08);
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px -14px rgba(56, 189, 248, 0.55);
+  box-shadow: 0 10px 24px -14px rgba(37, 99, 235, 0.55);
 }
 
 .buyer-move-card:hover .buyer-move-card__arrow {
@@ -1592,11 +1608,11 @@
 }
 
 .buyer-move-card--selected {
-  border-color: rgba(125, 211, 252, 0.65);
-  background: rgba(125, 211, 252, 0.14);
+  border-color: rgba(37, 99, 235, 0.9);
+  background: rgba(37, 99, 235, 0.08);
   box-shadow:
-    0 0 0 1px rgba(125, 211, 252, 0.35) inset,
-    0 0 24px -8px rgba(125, 211, 252, 0.5);
+    0 0 0 1px rgba(37, 99, 235, 0.35) inset,
+    0 10px 22px -10px rgba(37, 99, 235, 0.35);
   animation: choice-select-pop 0.22s ease;
 }
 
@@ -1611,21 +1627,21 @@
    outcome('success'/'continues'/'rejected')을 그대로 색상 클래스로만
    매핑한다. */
 .mission-badge--success {
-  color: #4ade80;
+  color: #16A34A;
   border-color: rgba(74, 222, 128, 0.4);
   background: rgba(74, 222, 128, 0.1);
   box-shadow: 0 0 24px -10px rgba(74, 222, 128, 0.55);
 }
 
 .mission-badge--continues {
-  color: #fbbf24;
+  color: #D97706;
   border-color: rgba(251, 191, 36, 0.4);
   background: rgba(251, 191, 36, 0.1);
   box-shadow: 0 0 24px -10px rgba(251, 191, 36, 0.55);
 }
 
 .mission-badge--rejected {
-  color: #f87171;
+  color: #DC2626;
   border-color: rgba(248, 113, 113, 0.4);
   background: rgba(248, 113, 113, 0.1);
   box-shadow: 0 0 24px -10px rgba(248, 113, 113, 0.55);
@@ -1653,13 +1669,13 @@
 .mission-info__row--emphasis dd {
   font-size: 19px;
   font-weight: 900;
-  color: #4ade80;
+  color: #16A34A;
 }
 
 .mission-info__row--lost dd {
   font-size: 17px;
   font-weight: 900;
-  color: #f87171;
+  color: #DC2626;
 }
 
 /* ---- 10. FINAL RESULT: TOTAL SCORE 등장 연출 ----
@@ -1681,5 +1697,129 @@
   100% {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+
+/* ---- Desktop redesign: 1200px+ horizontal game-board layout ----
+   Adds a two-column frame to MISSION / TURN(decision) / FINAL RESULT,
+   widens the market/product/choice card grids to 3 columns, and lets
+   the existing MissionHUD lay its stat cards out in one row. No game
+   logic, data or handlers are touched here -- layout/visual only. */
+.mission-card__layout,
+.decision-layout,
+.final-result-layout {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 3vw, 22px);
+}
+
+.mission-card__left,
+.mission-card__right,
+.decision-layout__left,
+.decision-layout__right,
+.final-result-layout__left,
+.final-result-layout__right {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: clamp(16px, 3vw, 22px);
+}
+
+.buyer-feedback-columns {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 1200px) {
+  .start-card {
+    max-width: 640px;
+  }
+
+  .market-card,
+  .product-card {
+    max-width: 1040px;
+  }
+
+  .mission-card,
+  .decision-card,
+  .final-result-card {
+    max-width: 1120px;
+  }
+
+  .buyer-card {
+    max-width: 760px;
+  }
+
+  .performance-card {
+    max-width: 640px;
+  }
+
+  .market-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .choice-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  .mission-card__layout,
+  .decision-layout,
+  .final-result-layout {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 28px;
+  }
+
+  .mission-card__left,
+  .decision-layout__left,
+  .final-result-layout__left {
+    flex: 0 0 340px;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .mission-card__right,
+  .decision-layout__right,
+  .final-result-layout__right {
+    flex: 1 1 auto;
+    align-items: stretch;
+    text-align: left;
+    min-width: 0;
+  }
+
+  .mission-hud {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .mission-hud__info {
+    flex: 0 0 auto;
+  }
+
+  .mission-hud__grid {
+    flex: 1 1 420px;
+    min-width: 0;
+  }
+
+  .mission-hud__turn {
+    flex: 0 0 auto;
+  }
+
+  .buyer-feedback-columns {
+    flex-direction: row;
+    gap: 16px;
+  }
+
+  .buyer-feedback-columns > .ai-feedback-panel__section {
+    flex: 1 1 0;
   }
 }

@@ -1179,6 +1179,8 @@ function MissionScreen({ market, product, briefing, scores, onMissionStart, onBa
         {/* ---- 9-4단계: MISSION 화면을 "게임 준비 화면"으로 ----
             배지 문구만 MISSION BRIEFING으로 바꾸고, 아래 READY 배지는
             새 데이터 없이 순수 문구 장식이다(어떤 값도 계산하지 않음). */}
+        <div className="mission-card__layout">
+        <div className="mission-card__left">
         <span className="mission-badge">MISSION BRIEFING</span>
 
         <h1 className="mission-title">
@@ -1204,6 +1206,8 @@ function MissionScreen({ market, product, briefing, scores, onMissionStart, onBa
             "이번 턴(미션)에서 무엇을 해야 하는지"를 한눈에 보여주는 목표
             패널. 값은 전부 getMissionBriefing(product)이 실제로 계산한
             briefing에서만 가져오며 새 숫자를 만들어내지 않는다. */}
+        </div>
+        <div className="mission-card__right">
         <section className="mission-objective">
           <span className="mission-objective__badge">&#127919; MISSION OBJECTIVE</span>
           <p className="mission-objective__text">
@@ -1275,6 +1279,8 @@ function MissionScreen({ market, product, briefing, scores, onMissionStart, onBa
             &#8594;
           </span>
         </button>
+      </div>
+        </div>
       </main>
     </div>
   )
@@ -1819,11 +1825,15 @@ function MissionDecisionScreen({
             round.prompt(기존 STRATEGY_ROUNDS 데이터)를 그대로 사용해 "이번
             턴에 무엇을 결정해야 하는지"를 게임의 목표 패널처럼 보여준다.
             새로운 문구를 만들지 않고 기존 데이터만 재사용한다. */}
+        <div className="decision-layout">
+        <div className="decision-layout__left">
         <section className="mission-objective mission-objective--turn">
           <span className="mission-objective__badge">&#127919; MISSION OBJECTIVE</span>
           <p className="mission-objective__text">{round.prompt}</p>
         </section>
 
+        </div>
+        <div className="decision-layout__right">
         <div className="choice-list">
           {choices.map((choice) => (
             <ChoiceCard
@@ -1935,6 +1945,8 @@ function MissionDecisionScreen({
             {isLastRound ? '바이어 반응 확인 →' : '다음 의사결정 →'}
           </button>
         )}
+        </div>
+      </div>
         </div>
       </main>
     </div>
@@ -2157,6 +2169,7 @@ function BuyerResponseScreen({ market, product, scores, selections, onContinue }
           <span className="ai-feedback-panel__badge">BUYER COMMENT</span>
           <p className="ai-feedback-panel__subtitle">{comment}</p>
 
+          <div className="buyer-feedback-columns">
           {positives.length > 0 && (
             <div className="ai-feedback-panel__section">
               <span className="ai-feedback-panel__label">POSITIVE POINTS</span>
@@ -2178,6 +2191,7 @@ function BuyerResponseScreen({ market, product, scores, selections, onContinue }
               </div>
             </div>
           )}
+        </div>
         </section>
 
         <button type="button" className="start-button" onClick={onContinue}>
@@ -2697,6 +2711,8 @@ function FinalResultScreen({ scores, market, product, selections, budget, initia
           </span>
         )}
 
+        <div className="final-result-layout">
+        <div className="final-result-layout__left">
         {exportPerformance && (
           <section className="result-panel">
             <span className="result-panel__badge">&#128230; EXPORT PERFORMANCE</span>
@@ -2803,6 +2819,8 @@ function FinalResultScreen({ scores, market, product, selections, budget, initia
           ))}
         </div>
 
+        </div>
+        <div className="final-result-layout__right">
         <div className="strategy-summary">
           <span className="price-step">YOUR STRATEGY</span>
           <div className="strategy-list">
@@ -2878,6 +2896,8 @@ function FinalResultScreen({ scores, market, product, selections, budget, initia
           </div>
         </section>
 
+        </div>
+        </div>
         <button type="button" className="start-button" onClick={onPlayAgain}>
           PLAY AGAIN
         </button>
@@ -3102,6 +3122,15 @@ function App() {
   // PLAY AGAIN 시 함께 초기화된다.
   const [buyerDecision, setBuyerDecision] = useState(null)
   const [contractResult, setContractResult] = useState(null)
+
+  // UI/UX 리디자인: 화면(또는 턴)이 바뀔 때 이전 화면에서 아래로 스크롤된
+  // 위치가 그대로 이어져 새 화면의 제목/헤더가 화면 밖으로 가려지는 문제를
+  // 막기 위한 스크롤 초기화. 점수 계산이나 게임 진행 로직에는 영향 없음.
+  useEffect(() => {
+    window.scrollTo(0, 0)
+    document.body.scrollTop = 0
+    document.documentElement.scrollTop = 0
+  }, [screen, roundIndex])
 
   const market = MARKET_OPTIONS.find((m) => m.id === selectedMarket) ?? MARKET_OPTIONS[0]
   const product =

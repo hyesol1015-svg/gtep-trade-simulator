@@ -1,5 +1,5 @@
 :root {
-  color-scheme: dark;
+  color-scheme: light;
   font-family:
     -apple-system,
     BlinkMacSystemFont,
@@ -23,7 +23,7 @@ body {
 }
 
 body {
-  background: #060a14;
+  background: #F7F4EC;
 }
 
 #root {
