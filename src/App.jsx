@@ -48,7 +48,7 @@ function computeTotalScore(scores) {
 // the mission budget is small or large. Never goes below 0.
 function applyBudgetChange(budget, pct) {
   if (!pct) return budget
-  const delta = Math.round((budget * pct) / 10000) * 10000
+  const delta = Math.round((budget * pct) / 100000) * 100000
   return clampValue(budget + delta, 0, Infinity)
 }
 
@@ -59,7 +59,7 @@ function applyBudgetChange(budget, pct) {
 // working exactly as before — this constant documents the intended default
 // shape and is what the HUD shows before a mission has actually started.
 const initialGameState = {
-  budget: 1000000,
+  budget: 10000000,
   buyerTrust: 50,
   marketFit: 50,
   adEfficiency: 50,
@@ -460,7 +460,7 @@ const PRODUCT_CATALOG = {
       id: 'JP-1',
       name: 'JENNY HONG 진정 크림',
       category: '화장품',
-      price: 28000,
+      price: 280000,
       moq: 500,
       demand: '높음',
       competition: '높음',
@@ -473,7 +473,7 @@ const PRODUCT_CATALOG = {
       id: 'JP-2',
       name: '홍삼 스틱',
       category: '건강/뷰티',
-      price: 32000,
+      price: 320000,
       moq: 300,
       demand: '보통',
       competition: '보통',
@@ -486,7 +486,7 @@ const PRODUCT_CATALOG = {
       id: 'JP-3',
       name: '반려동물 그루밍 브러시',
       category: '반려동물 제품',
-      price: 15000,
+      price: 150000,
       moq: 1000,
       demand: '보통',
       competition: '낮음',
@@ -501,7 +501,7 @@ const PRODUCT_CATALOG = {
       id: 'SG-1',
       name: '비타민C 브라이트닝 세럼',
       category: '화장품',
-      price: 24000,
+      price: 240000,
       moq: 500,
       demand: '높음',
       competition: '높음',
@@ -514,7 +514,7 @@ const PRODUCT_CATALOG = {
       id: 'SG-2',
       name: '즉석 김치찌개 밀키트',
       category: '식품',
-      price: 9000,
+      price: 90000,
       moq: 1000,
       demand: '보통',
       competition: '보통',
@@ -527,7 +527,7 @@ const PRODUCT_CATALOG = {
       id: 'SG-3',
       name: '휴대용 공기청정기',
       category: '생활용품',
-      price: 45000,
+      price: 450000,
       moq: 200,
       demand: '보통',
       competition: '낮음',
@@ -542,7 +542,7 @@ const PRODUCT_CATALOG = {
       id: 'UZ-1',
       name: '코스메틱 로션 세트',
       category: '화장품',
-      price: 12000,
+      price: 120000,
       moq: 1000,
       demand: '보통',
       competition: '낮음',
@@ -555,7 +555,7 @@ const PRODUCT_CATALOG = {
       id: 'UZ-2',
       name: '라면 멀티팩',
       category: '식품',
-      price: 6000,
+      price: 60000,
       moq: 2000,
       demand: '높음',
       competition: '보통',
@@ -568,7 +568,7 @@ const PRODUCT_CATALOG = {
       id: 'UZ-3',
       name: '주방용 실리콘 용품',
       category: '생활용품',
-      price: 8000,
+      price: 80000,
       moq: 1500,
       demand: '보통',
       competition: '낮음',
@@ -583,7 +583,7 @@ const PRODUCT_CATALOG = {
       id: 'CN-1',
       name: '마스크팩 세트',
       category: '화장품',
-      price: 10000,
+      price: 100000,
       moq: 2000,
       demand: '높음',
       competition: '높음',
@@ -596,7 +596,7 @@ const PRODUCT_CATALOG = {
       id: 'CN-2',
       name: '유아용 간식 스낵',
       category: '식품',
-      price: 7000,
+      price: 70000,
       moq: 3000,
       demand: '높음',
       competition: '높음',
@@ -609,7 +609,7 @@ const PRODUCT_CATALOG = {
       id: 'CN-3',
       name: '반려동물 기능성 사료',
       category: '반려동물 제품',
-      price: 22000,
+      price: 220000,
       moq: 1000,
       demand: '보통',
       competition: '보통',
@@ -624,7 +624,7 @@ const PRODUCT_CATALOG = {
       id: 'US-1',
       name: '콜라겐 뷰티 드링크',
       category: '건강/뷰티',
-      price: 18000,
+      price: 180000,
       moq: 500,
       demand: '높음',
       competition: '높음',
@@ -637,7 +637,7 @@ const PRODUCT_CATALOG = {
       id: 'US-2',
       name: '프리미엄 그래놀라',
       category: '식품',
-      price: 14000,
+      price: 140000,
       moq: 800,
       demand: '보통',
       competition: '높음',
@@ -650,7 +650,7 @@ const PRODUCT_CATALOG = {
       id: 'US-3',
       name: '반려동물 자동 급식기',
       category: '반려동물 제품',
-      price: 65000,
+      price: 650000,
       moq: 300,
       demand: '높음',
       competition: '높음',
@@ -665,7 +665,7 @@ const PRODUCT_CATALOG = {
       id: 'GB-1',
       name: '저자극 스킨케어 세트',
       category: '화장품',
-      price: 26000,
+      price: 260000,
       moq: 500,
       demand: '보통',
       competition: '보통',
@@ -678,7 +678,7 @@ const PRODUCT_CATALOG = {
       id: 'GB-2',
       name: '유기농 티백 세트',
       category: '식품',
-      price: 11000,
+      price: 110000,
       moq: 600,
       demand: '보통',
       competition: '보통',
@@ -691,7 +691,7 @@ const PRODUCT_CATALOG = {
       id: 'GB-3',
       name: '친환경 생활용품 세트',
       category: '생활용품',
-      price: 16000,
+      price: 160000,
       moq: 700,
       demand: '보통',
       competition: '낮음',
@@ -1051,7 +1051,7 @@ const STRATEGY_ROUNDS = [
 // higher-value or harder product naturally means a bigger budget / tougher
 // target, without needing extra fields on PRODUCT_CATALOG.
 function getMissionBriefing(product) {
-  const budget = Math.round((product.price * 15) / 10000) * 10000
+  const budget = Math.round((product.price * 15) / 100000) * 100000
   const targetSales = product.moq
   const competitionBonus =
     product.competition === '높음' ? 5 : product.competition === '낮음' ? -5 : 0
