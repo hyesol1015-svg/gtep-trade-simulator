@@ -394,6 +394,64 @@ function MarketFlagIcon({ code, className = 'market-option__flag' }) {
   )
 }
 
+// ---- Phase 4: MARKET SELECT/PRODUCT SELECT를 위한 순수 표시용(display-only)
+// 매핑. MARKET_OPTIONS/MARKET_PROFILES/PRODUCT_CATALOG 데이터나 점수 계산에는
+// 전혀 관여하지 않으며, 이미 존재하는 문자열 값(시장 id, 카테고리명, strategy
+// 문구)을 색상/아이콘/칩으로 "표현"만 다르게 해줄 뿐이다. 기존 9-10단계의
+// BREAKDOWN_TONE_MAP과 동일한 성격의 헬퍼다.
+const MARKET_ACCENT = {
+  JP: { color: '#2563EB', tint: 'rgba(37, 99, 235, 0.1)', border: 'rgba(37, 99, 235, 0.28)' },
+  SG: { color: '#7C3AED', tint: 'rgba(124, 58, 237, 0.1)', border: 'rgba(124, 58, 237, 0.28)' },
+  UZ: { color: '#D97706', tint: 'rgba(217, 119, 6, 0.1)', border: 'rgba(217, 119, 6, 0.28)' },
+  CN: { color: '#DC2626', tint: 'rgba(220, 38, 38, 0.1)', border: 'rgba(220, 38, 38, 0.28)' },
+  US: { color: '#0EA5E9', tint: 'rgba(14, 165, 233, 0.1)', border: 'rgba(14, 165, 233, 0.28)' },
+  GB: { color: '#16A34A', tint: 'rgba(22, 163, 74, 0.1)', border: 'rgba(22, 163, 74, 0.28)' },
+}
+
+// market.strategy(예: "REVIEW / BRANDING")를 개별 칩으로 나눠 보여주기 위한
+// 순수 문자열 분리 헬퍼. 새 문구를 만들지 않고 기존 값만 나눈다.
+function getStrategyTags(strategy) {
+  return (strategy ?? '')
+    .split('/')
+    .map((part) => part.trim())
+    .filter(Boolean)
+}
+
+// MARKET SELECT에서 고른 시장의 strategy를 PRODUCT SELECT 화면 상단에도 같은
+// 색/모양으로 다시 보여줘 "같은 선택이 이어지고 있다"는 연결감을 준다.
+// accent가 없으면 CSS 기본값(amber)으로 표시된다.
+function StrategyTags({ strategy, accent, className }) {
+  const tags = getStrategyTags(strategy)
+  if (tags.length === 0) return null
+  const style = accent
+    ? {
+        '--tag-accent': accent.color,
+        '--tag-accent-tint': accent.tint,
+        '--tag-accent-border': accent.border,
+      }
+    : undefined
+  return (
+    <span className={className ? `strategy-tags ${className}` : 'strategy-tags'} style={style}>
+      {tags.map((tag) => (
+        <span key={tag} className="strategy-tag">
+          {tag}
+        </span>
+      ))}
+    </span>
+  )
+}
+
+// 상품 카테고리(PRODUCT_CATALOG의 기존 category 문자열)를 아이콘으로만
+// 보여주는 순수 표시용 매핑. 카테고리 값 자체는 그대로이며 새 분류를
+// 추가하지 않는다.
+const PRODUCT_CATEGORY_ICONS = {
+  화장품: '💄',
+  '건강/뷰티': '🌿',
+  '반려동물 제품': '🐾',
+  식품: '🍜',
+  생활용품: '🏠',
+}
+
 // Product data, kept separate from the screen components so new products can
 // be added later just by extending this object (3 entries per market id).
 const PRODUCT_CATALOG = {
@@ -1040,6 +1098,26 @@ function ChoiceCard({ option, selected, onSelect, muted = false }) {
         {option.subtitle && (
           <span className="choice-card__subtitle">{option.subtitle}</span>
         )}
+        {/* ---- Phase 4: PRODUCT SELECT의 수요/경쟁 칩(option.tags). 델타
+            수치를 보여주는 keyEffects와는 성격이 달라 별도 클래스로
+            렌더링하되, 톤(good/bad) 판정은 기존 getBreakdownTone을 그대로
+            재사용한다. tags가 없는 기존 호출부(전략 카드 등)는 영향 없음. ---- */}
+        {option.tags && option.tags.length > 0 && (
+          <span className="choice-card__tags">
+            {option.tags.map((item) => (
+              <span
+                key={item.key}
+                className={
+                  item.tone
+                    ? `choice-card__tag choice-card__tag--${item.tone}`
+                    : 'choice-card__tag'
+                }
+              >
+                {item.label}
+              </span>
+            ))}
+          </span>
+        )}
         {option.keyEffects && option.keyEffects.length > 0 && (
           <span className="choice-card__effects">
             {option.keyEffects.map((item) => (
@@ -1325,6 +1403,17 @@ function SelectMarketScreen({ selectedMarket, onSelect, onNext }) {
             // 처리해 선택/비선택 대비를 강화한다. selectedMarket(기존 prop)
             // 에서만 파생되며 새 상태나 판단 로직은 추가하지 않는다.
             const isMuted = Boolean(selectedMarket) && !isSelected
+            const accent = MARKET_ACCENT[market.id]
+            // ---- Phase 4: 국가별 고정 accent 색(표시 전용, MARKET_OPTIONS/
+            // MARKET_PROFILES 값과 무관)을 CSS 변수로 내려보내 카드마다 다른
+            // 상단 바/태그 색을 낼 수 있게 한다. 판정 로직에는 쓰이지 않는다.
+            const accentStyle = accent
+              ? {
+                  '--market-accent': accent.color,
+                  '--market-accent-tint': accent.tint,
+                  '--market-accent-border': accent.border,
+                }
+              : undefined
             return (
               <button
                 type="button"
@@ -1336,6 +1425,7 @@ function SelectMarketScreen({ selectedMarket, onSelect, onNext }) {
                       ? 'market-option market-option--muted'
                       : 'market-option'
                 }
+                style={accentStyle}
                 onClick={() => handleSelect(market)}
                 aria-pressed={isSelected}
               >
@@ -1347,8 +1437,12 @@ function SelectMarketScreen({ selectedMarket, onSelect, onNext }) {
                 <MarketFlagIcon code={market.id} />
                 <span className="market-option__name">{market.name}</span>
                 <span className="market-option__name-ko">{market.nameKo}</span>
+                <StrategyTags
+                  strategy={market.strategy}
+                  accent={accent}
+                  className="market-option__tags"
+                />
                 <span className="market-option__desc">{market.description}</span>
-                <span className="market-option__strategy">{market.strategy}</span>
               </button>
             )
           })}
@@ -1384,16 +1478,23 @@ function SelectMarketScreen({ selectedMarket, onSelect, onNext }) {
 }
 
 function SelectProductScreen({ market, selectedProductId, onNext, onBack }) {
+  const marketAccent = market ? MARKET_ACCENT[market.id] : null
+  // ---- Phase 4: 상품의 시장수요/경쟁도를 breakdown 목록 안에 묻어두지 않고
+  // 카드 상단의 칩(tags)으로 끌어올려 "이 상품의 핵심 차별점"이 먼저 눈에
+  // 들어오게 한다. 값과 색 판정(getBreakdownTone)은 기존 것을 그대로
+  // 재사용하며, 새 점수나 판정을 추가하지 않는다.
   const productChoices = getProductsByMarket(market?.id).map((product, index) => ({
     id: String(index + 1),
-    title: product.name,
+    title: `${PRODUCT_CATEGORY_ICONS[product.category] ?? ''} ${product.name}`.trim(),
     subtitle: product.sellingPoint,
+    tags: [
+      { key: 'demand', label: `수요 ${product.demand}`, tone: getBreakdownTone('시장수요', product.demand) },
+      { key: 'competition', label: `경쟁 ${product.competition}`, tone: getBreakdownTone('경쟁도', product.competition) },
+    ],
     breakdown: [
       { label: '카테고리', amount: product.category },
       { label: '판매가격', amount: `₩${product.price.toLocaleString()}` },
       { label: 'MOQ', amount: `${product.moq.toLocaleString()}개` },
-      { label: '시장수요', amount: product.demand },
-      { label: '경쟁도', amount: product.competition },
       { label: '현지화 난이도', amount: product.localizationDifficulty },
       { label: '광고 난이도', amount: product.adDifficulty },
     ],
@@ -1442,6 +1543,17 @@ function SelectProductScreen({ market, selectedProductId, onNext, onBack }) {
         <p className="price-lead">
           {market ? market.description : ''}
         </p>
+        {/* ---- Phase 4: MARKET → PRODUCT 연결감. MARKET SELECT에서 고른
+            시장의 strategy를 그대로(같은 색·같은 문구) 다시 보여줘, 지금
+            보고 있는 상품들이 "그 시장을 위한 선택"이라는 흐름을 잇는다.
+            새 데이터나 로직 없이 market.strategy(기존 값)만 재사용한다. ---- */}
+        {market && (
+          <StrategyTags
+            strategy={market.strategy}
+            accent={marketAccent}
+            className="product-header__tags"
+          />
+        )}
         <p className="price-question">어떤 상품으로 진출하시겠습니까?</p>
 
         <div className="choice-list">
@@ -1450,6 +1562,7 @@ function SelectProductScreen({ market, selectedProductId, onNext, onBack }) {
               key={choice.id}
               option={choice}
               selected={selectedId === choice.id}
+              muted={selectedId !== null && selectedId !== choice.id}
               onSelect={handleSelect}
             />
           ))}
