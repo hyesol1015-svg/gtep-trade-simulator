@@ -525,6 +525,19 @@
   font-weight: 600;
 }
 
+/* ---- 10단계: SELECT PRODUCT 카드에서 상품 특성(시장수요/경쟁도/현지화
+   난이도/광고 난이도)의 유·불리를 색으로 구분한다. 값 자체나 판정 로직은
+   그대로이며 표시 색상만 다르다. */
+.choice-card__breakdown-value--good {
+  color: #4ade80;
+  font-weight: 700;
+}
+
+.choice-card__breakdown-value--bad {
+  color: #f87171;
+  font-weight: 700;
+}
+
 /* ---- 9-2단계: 전략 카드 "주요 효과" 칩 ---- */
 .choice-card__effects {
   display: flex;

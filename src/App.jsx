@@ -1001,6 +1001,21 @@ function getMissionBriefing(product) {
   return { budget, targetSales, targetScore, totalRounds: STRATEGY_ROUNDS.length }
 }
 
+// ---- 10단계: SELECT PRODUCT 카드의 상품 특성(시장수요/경쟁도/현지화
+// 난이도/광고 난이도)이 실제로 유리한지 불리한지 색으로 한눈에 드러나게
+// 하는 순수 표시용 매핑이다. 새 데이터나 계산을 추가하지 않고, 이미
+// PRODUCT_CATALOG에 있는 문자열 값(높음/보통/낮음)을 해석만 한다.
+// calculateBuyerInterest 등 실제 판정 로직과는 전혀 무관하다.
+const BREAKDOWN_TONE_MAP = {
+  시장수요: { 높음: 'good', 낮음: 'bad' },
+  경쟁도: { 낮음: 'good', 높음: 'bad' },
+  '현지화 난이도': { 낮음: 'good', 높음: 'bad' },
+  '광고 난이도': { 낮음: 'good', 높음: 'bad' },
+}
+function getBreakdownTone(label, amount) {
+  return BREAKDOWN_TONE_MAP[label]?.[amount] ?? null
+}
+
 function ChoiceCard({ option, selected, onSelect, muted = false }) {
   // ---- 9-4단계: 다른 카드가 선택되어 있을 때 선택되지 않은 카드를
   // 무채색(muted) 처리하기 위한 클래스만 추가한다. selected/muted는 모두
@@ -1043,12 +1058,17 @@ function ChoiceCard({ option, selected, onSelect, muted = false }) {
         )}
         {option.breakdown && (
           <ul className="choice-card__breakdown">
-            {option.breakdown.map((item) => (
-              <li key={item.label}>
-                <span>{item.label}</span>
-                <span>{item.amount}</span>
-              </li>
-            ))}
+            {option.breakdown.map((item) => {
+              const tone = getBreakdownTone(item.label, item.amount)
+              return (
+                <li key={item.label}>
+                  <span>{item.label}</span>
+                  <span className={tone ? `choice-card__breakdown-value--${tone}` : undefined}>
+                    {item.amount}
+                  </span>
+                </li>
+              )
+            })}
           </ul>
         )}
       </span>
@@ -1193,6 +1213,14 @@ function MissionScreen({ market, product, briefing, scores, onMissionStart }) {
             <div className="mission-objective__target">
               <span className="mission-objective__target-label">TARGET SCORE</span>
               <span className="mission-objective__target-value">{briefing.targetScore}점</span>
+            </div>
+            {/* ---- 10단계: MISSION → TURN 연결. 새 숫자를 만들지 않고
+                이미 계산되어 있는 computeTotalScore(scores)를 TARGET SCORE
+                바로 옆에 나란히 보여줘 "지금 점수가 목표 대비 어디인지"가
+                미션 시작 전부터 눈에 들어오게 한다. ---- */}
+            <div className="mission-objective__target">
+              <span className="mission-objective__target-label">CURRENT SCORE</span>
+              <span className="mission-objective__target-value">{computeTotalScore(scores)}점</span>
             </div>
             <div className="mission-objective__target">
               <span className="mission-objective__target-label">DECISIONS</span>
@@ -1547,6 +1575,7 @@ function MissionHUD({
   marketFit,
   adEfficiency,
   currentScore,
+  targetScore,
   turn,
   totalTurns,
 }) {
@@ -1571,7 +1600,18 @@ function MissionHUD({
         <AnimatedStatCard label={'⭐ TRUST'} value={buyerTrust} />
         <AnimatedStatCard label={'\u{1F4C8} MARKET FIT'} value={marketFit} />
         <AnimatedStatCard label={'\u{1F4E3} AD EFFICIENCY'} value={adEfficiency} />
-        <AnimatedStatCard label={'\u{1F3C6} SCORE'} value={currentScore} />
+        {/* ---- 10단계: SCORE 카드가 이미 계산되어 있는 currentScore(값
+            자체)만 그대로 애니메이션(pulse/방향 화살표) 대상으로 삼으면서,
+            format으로 targetScore(MissionScreen과 같은
+            getMissionBriefing().targetScore)를 함께 보여줘 매 턴마다
+            "지금 몇 점이고 목표까지 얼마나 남았는지"가 이어지게 한다. 실제
+            비교 대상 값(prevValueRef)은 currentScore 그대로라 방향 표시
+            판정에는 아무 영향이 없다. ---- */}
+        <AnimatedStatCard
+          label={'\u{1F3C6} SCORE'}
+          value={currentScore}
+          format={(v) => `${v} / ${targetScore}`}
+        />
       </div>
       <div className="mission-hud__turn">
         <span className="mission-hud__turn-label">
@@ -1609,7 +1649,10 @@ function StrategyEffectToast({ option, effects, budgetDelta, market }) {
 
   return (
     <div className="effect-toast" role="status">
-      <span className="effect-toast__badge">STRATEGY EFFECT</span>
+      {/* ---- 10단계: PLAYER CHOICE → STAT CHANGE 인과관계가 더 뚜렷하게
+          읽히도록 배지 문구만 "STRATEGY SELECTED"로 바꾼다. 아래 표시되는
+          값(요약 문구/effects 델타/budgetDelta)은 전부 기존 그대로다. ---- */}
+      <span className="effect-toast__badge">STRATEGY SELECTED</span>
       <p className="effect-toast__summary">{getTurnSummary(option, effects, market)}</p>
       {rows.map((row) => (
         <div className="effect-toast__row" key={row.key}>
@@ -1685,6 +1728,10 @@ function MissionDecisionScreen({
   const selectedId = selection && selection.roundIndex === roundIndex ? selection.id : null
 
   const profile = MARKET_PROFILES[market.id]
+  // ---- 10단계: MissionScreen의 TARGET SCORE와 같은 소스(getMissionBriefing)
+  // 를 그대로 다시 호출해 targetScore만 꺼낸다. App()에 새 state/prop을
+  // 추가하지 않고, product는 이미 이 컴포넌트의 prop으로 갖고 있다.
+  const targetScore = getMissionBriefing(product).targetScore
 
   const choices = round.options.map((option) => {
     const { effects, notes, budgetPctAdjustment } = computeFinalEffects(option, round, market, product)
@@ -1739,6 +1786,7 @@ function MissionDecisionScreen({
           marketFit={scores.marketFit}
           adEfficiency={scores.adEfficiency}
           currentScore={computeTotalScore(scores)}
+          targetScore={targetScore}
           turn={roundIndex + 1}
           totalTurns={totalRounds}
         />
@@ -2393,7 +2441,13 @@ function BuyerNextMoveScreen({ market, product, scores, selections, onSelect }) 
         <span className="price-step">BUYER&apos;S NEXT MOVE</span>
 
         <h1 className="price-title">BUYER&apos;S NEXT MOVE</h1>
-        <p className="price-lead">HOW WILL YOU RESPOND?</p>
+        {/* ---- 10단계: BUYER RESPONSE → BUYER'S NEXT MOVE 연결. 이 화면의
+            선택지가 왜 이 3개인지(BUYER_NEXT_MOVE_OPTIONS[tier.level])를
+            직전 화면에서 이미 계산된 interestScore/tier 그대로 다시 보여줘
+            설명한다. 새 판정 로직은 추가하지 않는다. ---- */}
+        <p className="price-lead">
+          BUYER INTEREST {interestScore} / 100 — HOW WILL YOU RESPOND?
+        </p>
 
         <span className="mission-badge">
           {tier.icon} {tier.label}
@@ -2501,6 +2555,12 @@ function ContractOutcomeScreen({ market, product, contractResult, onContinue }) 
           </section>
         )}
 
+        {/* ---- 10단계: CONTRACT OUTCOME → EXPORT PERFORMANCE 시각적 흐름.
+            새 결과값 없이 이미 위에서 쓴 outcomeMeta.label을 그대로 재사용해
+            "이 결과가 다음 화면의 EXPORT PERFORMANCE로 이어진다"는 것만
+            보여준다. ---- */}
+        <p className="price-lead">{outcomeMeta.label} &#8594; EXPORT PERFORMANCE</p>
+
         <button type="button" className="start-button" onClick={onContinue}>
           CONTINUE TO FINAL RESULT &#8594;
         </button>
@@ -2562,6 +2622,32 @@ function FinalResultScreen({ scores, market, product, selections, budget, initia
         <span className="mission-badge">{market.name} MARKET PERFORMANCE</span>
 
         <p className="price-lead">{market.name} 시장 진출 전략이 완료되었습니다.</p>
+
+        {/* ---- 10단계: FINAL RESULT 요약. 새 계산 없이 이미 있는 market/
+            product/contractOutcome을 MARKET/PRODUCT/CONTRACT STATUS로
+            한 번에 모아 보여준다(문구는 CONTRACT OUTCOME 화면의 outcomeMeta
+            매핑과 동일한 라벨을 재사용). TOTAL SCORE(아래)가 이 화면의
+            핵심 시각 초점이라는 점은 그대로 유지된다. ---- */}
+        <dl className="mission-info">
+          <div className="mission-info__row">
+            <dt>MARKET</dt>
+            <dd>{market.name}</dd>
+          </div>
+          <div className="mission-info__row">
+            <dt>PRODUCT</dt>
+            <dd>{product.name}</dd>
+          </div>
+          {contractOutcome && (
+            <div className="mission-info__row">
+              <dt>CONTRACT STATUS</dt>
+              <dd>
+                {contractOutcome === 'success' && 'DEAL SUCCESSFUL'}
+                {contractOutcome === 'continues' && 'NEGOTIATION CONTINUES'}
+                {contractOutcome === 'rejected' && 'DEAL REJECTED'}
+              </dd>
+            </div>
+          )}
+        </dl>
 
         <div className="stat-grid">
           {Object.entries(SCORE_LABELS).map(([key, label]) => (
