@@ -3,10 +3,7 @@
 .market-screen,
 .product-screen,
 .decision-screen,
-.price-screen,
-.ad-budget-screen,
 .performance-screen,
-.review-screen,
 .buyer-screen,
 .final-result-screen {
   position: relative;
@@ -52,10 +49,7 @@
 .market-card,
 .product-card,
 .decision-card,
-.price-card,
-.ad-budget-card,
 .performance-card,
-.review-card,
 .buyer-card,
 .final-result-card {
   position: relative;
@@ -89,10 +83,7 @@
 .market-card,
 .product-card,
 .decision-card,
-.price-card,
-.ad-budget-card,
 .performance-card,
-.review-card,
 .buyer-card,
 .final-result-card {
   max-width: 560px;
@@ -163,32 +154,6 @@
   color: transparent;
 }
 
-.tagline {
-  margin: 0;
-  font-size: clamp(19px, 4.2vw, 23px);
-  font-weight: 700;
-  color: #f5f8ff;
-}
-
-.route {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(14px, 4vw, 22px);
-  font-size: clamp(34px, 8vw, 46px);
-  line-height: 1;
-}
-
-.route__flag {
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.35));
-}
-
-.route__arrow {
-  font-size: clamp(22px, 5vw, 28px);
-  font-weight: 700;
-  color: #fbbf24;
-}
-
 .description {
   margin: 0;
   font-size: clamp(14px, 3.4vw, 16px);
@@ -205,20 +170,6 @@
   border: 1px solid rgba(251, 191, 36, 0.35);
   border-radius: 999px;
   background: rgba(251, 191, 36, 0.08);
-}
-
-.mission-badge--icon {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.mission-badge__flag {
-  width: 18px;
-  height: 12px;
-  flex-shrink: 0;
-  border-radius: 2px;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
 }
 
 .ai-feedback-panel {
@@ -772,31 +723,6 @@
   color: #9fb0cc;
 }
 
-.performance-score {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-.review-progress {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding-top: 4px;
-  margin-top: 2px;
-  border-top: 1px solid rgba(148, 197, 255, 0.14);
-}
-
-.review-progress__value {
-  font-size: 18px;
-  font-weight: 800;
-  color: #f5f8ff;
-}
-
 .total-score {
   display: flex;
   flex-direction: column;
@@ -913,10 +839,7 @@
   .market-card,
   .product-card,
   .decision-card,
-  .price-card,
-  .ad-budget-card,
   .performance-card,
-  .review-card,
   .buyer-card,
   .final-result-card {
     border-radius: 20px;
@@ -965,6 +888,7 @@
   border-color: rgba(125, 211, 252, 0.5);
   background: rgba(125, 211, 252, 0.08);
   transform: translateY(-2px);
+  box-shadow: 0 10px 24px -14px rgba(56, 189, 248, 0.55);
 }
 
 .market-option:active {
@@ -976,11 +900,30 @@
   outline-offset: 3px;
 }
 
+/* ---- 9-5단계: STRATEGY CARD(.choice-card--selected)와 동일한 선택 강조
+   무게감(외곽 glow)을 사용해 MARKET SELECT도 같은 게임 UI 시스템처럼
+   느껴지도록 통일한다. 이 카드의 기존 정지 상태 transform(scale(1.02))에
+   맞춘 전용 pop 애니메이션만 추가했다 — 선택 판정 로직은 변경하지 않음. */
 .market-option--selected {
   border-color: rgba(125, 211, 252, 0.65);
   background: rgba(125, 211, 252, 0.12);
-  box-shadow: 0 0 0 1px rgba(125, 211, 252, 0.35) inset;
+  box-shadow:
+    0 0 0 1px rgba(125, 211, 252, 0.35) inset,
+    0 0 24px -8px rgba(125, 211, 252, 0.5);
   transform: scale(1.02);
+  animation: market-select-pop 0.28s ease;
+}
+
+@keyframes market-select-pop {
+  0% {
+    transform: scale(1.02);
+  }
+  45% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1.02);
+  }
 }
 
 .market-option__check {
@@ -1186,21 +1129,6 @@
   font-weight: 700;
   letter-spacing: 0.14em;
   color: #7dd3fc;
-}
-
-.mission-hud__progress {
-  width: 100%;
-  height: 8px;
-  border-radius: 999px;
-  background: rgba(148, 197, 255, 0.12);
-  overflow: hidden;
-}
-
-.mission-hud__progress-bar {
-  height: 100%;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #7dd3fc 0%, #38bdf8 45%, #fbbf24 130%);
-  transition: width 0.3s ease;
 }
 
 .final-market-status {
