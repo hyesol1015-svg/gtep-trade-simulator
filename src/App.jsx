@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './App.css'
 
 const SCORE_LABELS = {
@@ -1017,6 +1017,22 @@ function ChoiceCard({ option, selected, onSelect }) {
         {option.subtitle && (
           <span className="choice-card__subtitle">{option.subtitle}</span>
         )}
+        {option.keyEffects && option.keyEffects.length > 0 && (
+          <span className="choice-card__effects">
+            {option.keyEffects.map((item) => (
+              <span
+                key={item.key}
+                className={
+                  item.value > 0
+                    ? 'choice-card__key-effect choice-card__key-effect--up'
+                    : 'choice-card__key-effect choice-card__key-effect--down'
+                }
+              >
+                {item.label} {item.value > 0 ? `+${item.value}` : item.value}
+              </span>
+            ))}
+          </span>
+        )}
         {option.breakdown && (
           <ul className="choice-card__breakdown">
             {option.breakdown.map((item) => (
@@ -1146,6 +1162,34 @@ function MissionScreen({ market, product, briefing, scores, onMissionStart }) {
           <p>&#128161; {profile.hint}</p>
         </div>
 
+        {/* ---- 9-2단계: MISSION OBJECTIVE 카드 ----
+            "이번 턴(미션)에서 무엇을 해야 하는지"를 한눈에 보여주는 목표
+            패널. 값은 전부 getMissionBriefing(product)이 실제로 계산한
+            briefing에서만 가져오며 새 숫자를 만들어내지 않는다. */}
+        <section className="mission-objective">
+          <span className="mission-objective__badge">&#127919; MISSION OBJECTIVE</span>
+          <p className="mission-objective__text">
+            {briefing.totalRounds}번의 의사결정으로 목표 판매량과 목표 점수를
+            달성해 {market.name} 바이어와의 계약을 성사시키세요.
+          </p>
+          <div className="mission-objective__targets">
+            <div className="mission-objective__target">
+              <span className="mission-objective__target-label">TARGET SALES</span>
+              <span className="mission-objective__target-value">
+                {briefing.targetSales.toLocaleString()}개
+              </span>
+            </div>
+            <div className="mission-objective__target">
+              <span className="mission-objective__target-label">TARGET SCORE</span>
+              <span className="mission-objective__target-value">{briefing.targetScore}점</span>
+            </div>
+            <div className="mission-objective__target">
+              <span className="mission-objective__target-label">DECISIONS</span>
+              <span className="mission-objective__target-value">{briefing.totalRounds}회</span>
+            </div>
+          </div>
+        </section>
+
         <dl className="mission-info">
           <div className="mission-info__row">
             <dt>PRODUCT</dt>
@@ -1170,18 +1214,6 @@ function MissionScreen({ market, product, briefing, scores, onMissionStart }) {
           <div className="mission-info__row">
             <dt>시장 적합성</dt>
             <dd>{scores.marketFit}</dd>
-          </div>
-          <div className="mission-info__row">
-            <dt>목표 판매량</dt>
-            <dd>{briefing.targetSales.toLocaleString()}개</dd>
-          </div>
-          <div className="mission-info__row">
-            <dt>목표 점수</dt>
-            <dd>{briefing.targetScore}점</dd>
-          </div>
-          <div className="mission-info__row">
-            <dt>남은 의사결정 횟수</dt>
-            <dd>{briefing.totalRounds}회</dd>
           </div>
         </dl>
 
@@ -1405,44 +1437,106 @@ function computeFinalEffects(option, round, market, product) {
   return { effects, notes, budgetPctAdjustment }
 }
 
+// ---- 9-2단계: TURN 진행 트랙 ----
+// turn(1-based 현재 턴)과 totalTurns(=STRATEGY_ROUNDS.length, 하드코딩하지
+// 않고 그대로 전달받음)만으로 완료/진행중/남음 상태의 점을 생성한다. 라운드
+// 수가 바뀌어도 steps 배열이 totalTurns 기준으로 자동 생성되므로 그대로
+// 대응한다.
+function TurnProgressTrack({ turn, totalTurns }) {
+  const steps = Array.from({ length: totalTurns }, (_, index) => index + 1)
+  return (
+    <div className="turn-track" role="list" aria-label={`turn ${turn} of ${totalTurns}`}>
+      {steps.map((step) => {
+        const state = step < turn ? 'done' : step === turn ? 'current' : 'upcoming'
+        return (
+          <span
+            key={step}
+            className={`turn-track__step turn-track__step--${state}`}
+            role="listitem"
+          >
+            <span className="turn-track__dot">{state === 'done' ? '✓' : step}</span>
+          </span>
+        )
+      })}
+    </div>
+  )
+}
+
+// ---- 9-3단계: 값이 실제로 바뀔 때만 카드에 짧은 glow/scale 펄스를 주는
+// 순수 표시용 래퍼. 이전 값은 useRef로만 기억하고, 어떤 점수/예산도 새로
+// 계산하지 않는다 — props로 들어온 값을 그대로 보여줄 뿐이다. 최초 마운트
+// 시점(턴 1 진입 등)에는 "변화"가 아니므로 펄스가 뜨지 않는다.
+function AnimatedStatCard({ label, value, format }) {
+  const prevValueRef = useRef(value)
+  const [pulse, setPulse] = useState(false)
+
+  useEffect(() => {
+    if (prevValueRef.current !== value) {
+      prevValueRef.current = value
+      setPulse(true)
+      const timer = setTimeout(() => setPulse(false), 700)
+      return () => clearTimeout(timer)
+    }
+    return undefined
+  }, [value])
+
+  return (
+    <div className={pulse ? 'stat-card stat-card--pulse' : 'stat-card'}>
+      <span className="stat-card__label">{label}</span>
+      <span className="stat-card__value">{format ? format(value) : value}</span>
+    </div>
+  )
+}
+
 // Small in-game HUD shown at the top of every decision screen (7단계 스펙
 // 2/8/9번), reusing the existing .stat-grid/.stat-card tiles so it visually
 // matches FINAL RESULT's stat cards, plus a compact turn/progress row.
-function MissionHUD({ budget, buyerTrust, marketFit, adEfficiency, turn, totalTurns }) {
-  const progressPct = Math.round((turn / totalTurns) * 100)
+// ---- 9-2단계 강화: SELECTED MARKET/PRODUCT 정보 줄, CURRENT SCORE 스탯
+// 카드, 완료/진행중/남음을 구분하는 TURN 트랙을 추가했다. 모든 값은 실제
+// game state(props)에서만 가져오고, 기존 BUDGET/TRUST/MARKET FIT/
+// AD EFFICIENCY 카드와 계산 방식은 전혀 건드리지 않는다. ----
+// ---- 9-3단계 강화: 턴이 바뀌어도 이 컴포넌트 자체는 리마운트되지 않도록
+// App()/MissionDecisionScreen에서 그대로 유지한 채 렌더링해, 값이 바뀌는
+// 순간을 AnimatedStatCard가 감지해 짧게 강조할 수 있게 한다. ----
+function MissionHUD({
+  market,
+  product,
+  budget,
+  buyerTrust,
+  marketFit,
+  adEfficiency,
+  currentScore,
+  turn,
+  totalTurns,
+}) {
   return (
     <div className="mission-hud">
+      <div className="mission-hud__info">
+        <span className="mission-hud__info-item">
+          <MarketFlagIcon code={market.id} className="mission-hud__info-flag" />
+          {market.name}
+        </span>
+        <span className="mission-hud__info-sep" aria-hidden="true">
+          &bull;
+        </span>
+        <span className="mission-hud__info-item">{product.name}</span>
+      </div>
       <div className="stat-grid mission-hud__grid">
-        <div className="stat-card">
-          <span className="stat-card__label">&#128176; BUDGET</span>
-          <span className="stat-card__value">&#8361;{budget.toLocaleString()}</span>
-        </div>
-        <div className="stat-card">
-          <span className="stat-card__label">&#11088; TRUST</span>
-          <span className="stat-card__value">{buyerTrust}</span>
-        </div>
-        <div className="stat-card">
-          <span className="stat-card__label">&#128200; MARKET FIT</span>
-          <span className="stat-card__value">{marketFit}</span>
-        </div>
-        <div className="stat-card">
-          <span className="stat-card__label">&#128227; AD EFFICIENCY</span>
-          <span className="stat-card__value">{adEfficiency}</span>
-        </div>
+        <AnimatedStatCard
+          label={'\u{1F4B0} BUDGET'}
+          value={budget}
+          format={(v) => `₩${v.toLocaleString()}`}
+        />
+        <AnimatedStatCard label={'⭐ TRUST'} value={buyerTrust} />
+        <AnimatedStatCard label={'\u{1F4C8} MARKET FIT'} value={marketFit} />
+        <AnimatedStatCard label={'\u{1F4E3} AD EFFICIENCY'} value={adEfficiency} />
+        <AnimatedStatCard label={'\u{1F3C6} SCORE'} value={currentScore} />
       </div>
       <div className="mission-hud__turn">
         <span className="mission-hud__turn-label">
           &#9889; TURN {turn} / {totalTurns}
         </span>
-        <div
-          className="mission-hud__progress"
-          role="progressbar"
-          aria-valuenow={progressPct}
-          aria-valuemin={0}
-          aria-valuemax={100}
-        >
-          <div className="mission-hud__progress-bar" style={{ width: `${progressPct}%` }} />
-        </div>
+        <TurnProgressTrack turn={turn} totalTurns={totalTurns} />
       </div>
     </div>
   )
@@ -1509,6 +1603,29 @@ function StrategyEffectToast({ option, effects, budgetDelta, market }) {
   )
 }
 
+// ---- 9-2단계: 전략 카드에 "한눈에 보이는 주요 효과"를 보여주기 위한
+// 순수 표시용 파생 함수. 실제 점수 계산(computeFinalEffects/
+// applyStrategyEffect)에는 전혀 관여하지 않고, 이미 계산되어 있는 effects
+// 중 절댓값이 큰 항목 최대 2개만 뽑아 라벨을 만든다. 추측으로 새 수치를
+// 만들지 않고 실제 effects 값만 그대로 보여준다. ----
+const CHOICE_KEY_EFFECT_LABELS = {
+  marketFit: 'MARKET FIT',
+  trust: 'BUYER TRUST',
+  adEfficiency: 'AD EFFICIENCY',
+  profit: 'PROFIT',
+}
+function getKeyEffects(effects) {
+  return Object.entries(effects)
+    .filter(([key, value]) => CHOICE_KEY_EFFECT_LABELS[key] && value !== 0)
+    .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
+    .slice(0, 2)
+    .map(([key, value]) => ({
+      key,
+      label: CHOICE_KEY_EFFECT_LABELS[key],
+      value,
+    }))
+}
+
 function MissionDecisionScreen({
   roundIndex,
   totalRounds,
@@ -1519,7 +1636,12 @@ function MissionDecisionScreen({
   scores,
   onNext,
 }) {
-  const [selectedId, setSelectedId] = useState(null)
+  // ---- 9-3단계: 턴이 바뀌면(roundIndex 변경) 이전 턴에 남아있던 선택이
+  // 다음 턴 카드에 그대로 이어져 보이지 않아야 한다. useEffect로 다시
+  // setState 하는 대신, "어느 라운드에서 무엇을 선택했는지"를 함께 저장해
+  // 렌더링 중에 파생시킨다(선택/점수 판정 로직은 그대로). ----
+  const [selection, setSelection] = useState(null)
+  const selectedId = selection && selection.roundIndex === roundIndex ? selection.id : null
 
   const profile = MARKET_PROFILES[market.id]
 
@@ -1530,6 +1652,7 @@ function MissionDecisionScreen({
       effects,
       countryNotes: notes,
       budgetPct: (option.budgetPct ?? 0) + budgetPctAdjustment,
+      keyEffects: getKeyEffects(effects),
     }
   })
 
@@ -1540,7 +1663,7 @@ function MissionDecisionScreen({
 
   const handleSelect = (option) => {
     console.log(round.key, option.id)
-    setSelectedId(option.id)
+    setSelection({ roundIndex, id: option.id })
   }
 
   return (
@@ -1549,28 +1672,47 @@ function MissionDecisionScreen({
       <div className="screen__grid" aria-hidden="true" />
 
       <main className="decision-card">
-        <span className="price-step">
-          DECISION {roundIndex + 1} / {totalRounds}
-        </span>
+        {/* ---- 9-3단계: TURN 전환 연출 ----
+            턴이 바뀔 때마다 roundIndex를 key로 삼아 제목/설명 블록만 짧게
+            fade-in 시킨다. MissionHUD는 이 밖에 그대로 두어(리마운트되지
+            않게) 값이 바뀌는 순간을 자체적으로 감지해 강조할 수 있게 한다. */}
+        <div key={`head-${roundIndex}`} className="decision-turn-fade">
+          <span className="price-step">
+            DECISION {roundIndex + 1} / {totalRounds}
+          </span>
 
-        <h1 className="price-title">
-          {round.icon} {round.title}
-        </h1>
+          <h1 className="price-title">
+            {round.icon} {round.title}
+          </h1>
 
-        <p className="price-lead">
-          {market.name} · {product.name}
-        </p>
+          <p className="price-lead">
+            {market.name} · {product.name}
+          </p>
+        </div>
 
         <MissionHUD
+          market={market}
+          product={product}
           budget={budget}
           buyerTrust={scores.trust}
           marketFit={scores.marketFit}
           adEfficiency={scores.adEfficiency}
+          currentScore={computeTotalScore(scores)}
           turn={roundIndex + 1}
           totalTurns={totalRounds}
         />
 
-        <p className="price-question">{round.prompt}</p>
+        {/* ---- 9-3단계: 턴 본문(목표/전략 카드/결과)도 roundIndex가 바뀌면
+            함께 fade-in 되도록 같은 방식으로 묶는다. ---- */}
+        <div key={`body-${roundIndex}`} className="decision-turn-fade">
+        {/* ---- 9-2단계: 턴별 MISSION OBJECTIVE ----
+            round.prompt(기존 STRATEGY_ROUNDS 데이터)를 그대로 사용해 "이번
+            턴에 무엇을 결정해야 하는지"를 게임의 목표 패널처럼 보여준다.
+            새로운 문구를 만들지 않고 기존 데이터만 재사용한다. */}
+        <section className="mission-objective mission-objective--turn">
+          <span className="mission-objective__badge">&#127919; MISSION OBJECTIVE</span>
+          <p className="mission-objective__text">{round.prompt}</p>
+        </section>
 
         <div className="choice-list">
           {choices.map((choice) => (
@@ -1682,6 +1824,7 @@ function MissionDecisionScreen({
             {isLastRound ? '바이어 반응 확인 →' : '다음 의사결정 →'}
           </button>
         )}
+        </div>
       </main>
     </div>
   )
