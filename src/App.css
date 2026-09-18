@@ -1101,6 +1101,44 @@
   color: transparent;
 }
 
+/* ---- Phase 6: FINAL RESULT의 TOTAL SCORE도 CONTRACT OUTCOME(기존
+   outcome 값 그대로: success/continues/rejected)에 따라 색으로 구분해
+   DEAL SUCCESSFUL / NEGOTIATION CONTINUES / DEAL REJECTED가 결과 화면
+   전체에서 한 번 더 뚜렷하게 구분되도록 한다. 새 판정/색 체계가 아니라
+   .mission-badge--success 등과 같은 팔레트를 재사용한다. ---- */
+.total-score--success .total-score__value {
+  background: linear-gradient(135deg, #16A34A 0%, #22c55e 50%, #15803d 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.total-score--continues .total-score__value {
+  background: linear-gradient(135deg, #D97706 0%, #f59e0b 50%, #b45309 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.total-score--rejected .total-score__value {
+  background: linear-gradient(135deg, #DC2626 0%, #ef4444 50%, #b91c1c 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.total-score--success {
+  box-shadow: 0 0 60px -20px rgba(74, 222, 128, 0.5);
+}
+
+.total-score--continues {
+  box-shadow: 0 0 60px -20px rgba(251, 191, 36, 0.5);
+}
+
+.total-score--rejected {
+  box-shadow: 0 0 60px -20px rgba(248, 113, 113, 0.5);
+}
+
 .strategy-summary {
   width: 100%;
   display: flex;
@@ -1517,7 +1555,7 @@
   box-shadow: 0 12px 24px -14px rgba(30, 41, 59, 0.22);
   text-align: left;
   overflow: hidden;
-  animation: effect-toast-pop 2.4s ease forwards;
+  animation: effect-toast-pop 0.4s ease both;
 }
 
 .effect-toast__badge {
@@ -1564,26 +1602,14 @@
   0% {
     opacity: 0;
     max-height: 0;
-    padding: 0 16px;
+    padding: 0 18px;
     transform: translateY(-6px);
   }
-  8% {
-    opacity: 1;
-    max-height: 220px;
-    padding: 12px 16px;
-    transform: translateY(0);
-  }
-  82% {
-    opacity: 1;
-    max-height: 220px;
-    padding: 12px 16px;
-    transform: translateY(0);
-  }
   100% {
-    opacity: 0;
-    max-height: 0;
-    padding: 0 16px;
-    transform: translateY(-4px);
+    opacity: 1;
+    max-height: 220px;
+    padding: 16px 18px;
+    transform: translateY(0);
   }
 }
 
@@ -1868,6 +1894,13 @@
 
 .buyer-response-card .start-button {
   animation: turn-fade-in 0.35s ease 0.45s both;
+}
+
+/* ---- Phase 6: BUYER RESPONSE 순차 등장에 AI BUYER FEEDBACK(말풍선/포인트)도
+   포함시켜 "점수 → 반응 → 코멘트" 순서로 자연스럽게 이어지게 한다. 문구/
+   판정은 그대로이며 타이밍만 맞춘다. ---- */
+.buyer-response-card .ai-feedback-panel {
+  animation: screen-in 0.35s ease 0.4s both;
 }
 
 /* Phase 3: .stat-grid가 MissionHUD와 .mission-hud__grid 클래스를 공유하다
@@ -2334,6 +2367,24 @@
   box-shadow:
     0 0 0 3px rgba(37, 99, 235, 0.22),
     0 4px 10px -2px rgba(0, 0, 0, 0.45);
+}
+
+/* ---- Phase 6: TURN 화면 NEXT ACTION 버튼 위계 강화. 버튼 자체 크기/문구는
+   그대로 두고, 위쪽에 여백+구분선만 추가해 긴 AI BUYER FEEDBACK 뒤에도
+   "다음 행동"이 시각적으로 분리되어 보이게 한다. ---- */
+.decision-card .start-button {
+  margin-top: 18px;
+  position: relative;
+}
+
+.decision-card .start-button::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 8%;
+  right: 8%;
+  height: 1px;
+  background: rgba(30, 41, 59, 0.12);
 }
 
 @media (min-width: 1200px) {

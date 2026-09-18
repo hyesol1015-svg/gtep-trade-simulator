@@ -1980,6 +1980,7 @@ function MissionDecisionScreen({
 
         </div>
         <div className="decision-layout__right">
+        <span className="choice-list__label">STRATEGY OPTIONS</span>
         <div className="choice-list">
           {choices.map((choice) => (
             <ChoiceCard
@@ -2940,7 +2941,7 @@ function FinalResultScreen({ scores, market, product, selections, budget, initia
           ))}
         </div>
 
-        <div className="total-score">
+        <div className={`total-score${contractOutcome ? ` total-score--${contractOutcome}` : ''}`}>
           <span className="total-score__label">TOTAL SCORE</span>
           <span className="total-score__value">
             {totalScore}
@@ -2949,7 +2950,7 @@ function FinalResultScreen({ scores, market, product, selections, budget, initia
         </div>
 
         {contractOutcome && (
-          <span className="mission-badge">
+          <span className={`mission-badge mission-badge--${contractOutcome}`}>
             {contractOutcome === 'success' && '\u{1F7E2} DEAL SUCCESSFUL'}
             {contractOutcome === 'continues' && '\u{1F7E1} NEGOTIATION CONTINUES'}
             {contractOutcome === 'rejected' && '\u{1F534} DEAL REJECTED'}
