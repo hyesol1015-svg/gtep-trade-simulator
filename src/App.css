@@ -1442,3 +1442,262 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ================================================================
+   9-4단계: 게임 경험/결과 화면 폴리시
+   기존 점수/판정 계산은 전혀 건드리지 않고, 이미 있는 값(outcome,
+   tier.level, interestScore, exportPerformance, totalScore 등)을
+   CSS 클래스/스타일로만 매핑하거나, 짧은 진입 연출만 추가한다.
+   ================================================================ */
+
+/* ---- 1. MISSION 화면: READY FOR NEGOTIATION 배지 ---- */
+.mission-ready-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: #4ade80;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.32);
+  animation: turn-fade-in 0.35s ease 0.1s both;
+}
+
+/* ---- 3. STRATEGY CARD: 선택되지 않은 카드 muted 처리 ---- */
+.choice-card--muted {
+  opacity: 0.55;
+  filter: saturate(0.7);
+}
+
+.choice-card--muted:hover {
+  opacity: 0.8;
+}
+
+/* ---- 2. TURN HUD 강화: 현재 턴은 더 크게, 완료는 톤 다운, 남은 턴은
+   낮은 불투명도로 구분을 뚜렷하게 한다. ---- */
+.turn-track__step--current .turn-track__dot {
+  transform: scale(1.18);
+}
+
+.turn-track__step--done .turn-track__dot {
+  color: #7dd3fc;
+  background: rgba(125, 211, 252, 0.14);
+  border-color: rgba(125, 211, 252, 0.3);
+  opacity: 0.75;
+}
+
+.turn-track__step--upcoming .turn-track__dot {
+  opacity: 0.45;
+}
+
+/* ---- 5. HUD 방향 인디케이터 (▲/▼) ----
+   pulse와 같은 700ms 창에서만 보이다 함께 사라진다. 값이 그대로면
+   아무 표시도 하지 않는다(=muted). */
+.stat-card__direction {
+  margin-left: 3px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.stat-card__direction--up {
+  color: #4ade80;
+}
+
+.stat-card__direction--down {
+  color: #f87171;
+}
+
+/* ---- 6. BUYER RESPONSE: 관심도 시각 미터 + 단계적 진입 연출 ---- */
+.interest-meter {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(148, 197, 255, 0.12);
+  overflow: hidden;
+  animation: turn-fade-in 0.35s ease 0.25s both;
+}
+
+.interest-meter__fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+
+.interest-meter__fill--high {
+  background: linear-gradient(135deg, #4ade80, #22c55e);
+}
+
+.interest-meter__fill--moderate {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+}
+
+.interest-meter__fill--low {
+  background: linear-gradient(135deg, #fb923c, #f97316);
+}
+
+.interest-meter__fill--verylow {
+  background: linear-gradient(135deg, #f87171, #ef4444);
+}
+
+/* BUYER RESPONSE 화면(.buyer-response-card)에서만 제목 → 관심도 →
+   미터 → 설명 → 버튼 순으로 짧게 이어지는 단계적 진입 연출.
+   BUYER'S NEXT MOVE 화면도 .buyer-card를 쓰지만 이 추가 클래스가
+   없으므로 영향받지 않는다. */
+.buyer-response-card .price-title {
+  animation: turn-fade-in 0.35s ease 0.05s both;
+}
+
+.buyer-response-card .reaction-panel {
+  animation: turn-fade-in 0.35s ease 0.35s both;
+}
+
+.buyer-response-card .start-button {
+  animation: turn-fade-in 0.35s ease 0.45s both;
+}
+
+/* ---- 7. BUYER'S NEXT MOVE: 카드형 액션 선택지 ---- */
+.buyer-move-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 15px 20px;
+  border-radius: 14px;
+  background: rgba(148, 197, 255, 0.05);
+  border: 1px solid rgba(148, 197, 255, 0.16);
+  color: #f5f8ff;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.buyer-move-card__arrow {
+  display: inline-block;
+  color: #7dd3fc;
+  transition: transform 0.15s ease;
+}
+
+.buyer-move-card:hover {
+  border-color: rgba(125, 211, 252, 0.5);
+  background: rgba(125, 211, 252, 0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -14px rgba(56, 189, 248, 0.55);
+}
+
+.buyer-move-card:hover .buyer-move-card__arrow {
+  transform: translateX(4px);
+}
+
+.buyer-move-card:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.buyer-move-card:focus-visible {
+  outline: 2px solid #fbbf24;
+  outline-offset: 3px;
+}
+
+.buyer-move-card--selected {
+  border-color: rgba(125, 211, 252, 0.65);
+  background: rgba(125, 211, 252, 0.14);
+  box-shadow:
+    0 0 0 1px rgba(125, 211, 252, 0.35) inset,
+    0 0 24px -8px rgba(125, 211, 252, 0.5);
+  animation: choice-select-pop 0.22s ease;
+}
+
+.buyer-move-card:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ---- 8. CONTRACT OUTCOME: 결과별 glow + 순차 등장 ----
+   outcome('success'/'continues'/'rejected')을 그대로 색상 클래스로만
+   매핑한다. */
+.mission-badge--success {
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.4);
+  background: rgba(74, 222, 128, 0.1);
+  box-shadow: 0 0 24px -10px rgba(74, 222, 128, 0.55);
+}
+
+.mission-badge--continues {
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.4);
+  background: rgba(251, 191, 36, 0.1);
+  box-shadow: 0 0 24px -10px rgba(251, 191, 36, 0.55);
+}
+
+.mission-badge--rejected {
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.4);
+  background: rgba(248, 113, 113, 0.1);
+  box-shadow: 0 0 24px -10px rgba(248, 113, 113, 0.55);
+}
+
+.performance-card .mission-badge {
+  animation: buyer-score-reveal 0.35s ease 0.05s both;
+}
+
+.performance-card .reaction-panel {
+  animation: turn-fade-in 0.35s ease 0.15s both;
+}
+
+.performance-card .mission-info,
+.performance-card .result-panel {
+  animation: turn-fade-in 0.35s ease 0.25s both;
+}
+
+.performance-card .start-button {
+  animation: turn-fade-in 0.35s ease 0.35s both;
+}
+
+/* ---- 9. EXPORT PERFORMANCE: 성사 시 핵심 숫자 강조 / 결렬 시 놓친
+   기회 강조. 계산식은 전혀 바꾸지 않고 표시만 키운다. ---- */
+.mission-info__row--emphasis dd {
+  font-size: 19px;
+  font-weight: 900;
+  color: #4ade80;
+}
+
+.mission-info__row--lost dd {
+  font-size: 17px;
+  font-weight: 900;
+  color: #f87171;
+}
+
+/* ---- 10. FINAL RESULT: TOTAL SCORE 등장 연출 ----
+   calculateFinalScore()가 만든 값은 그대로 두고, CSS 스케일 리빌
+   효과만 추가한다(카운트업 없이 순수 CSS). */
+.final-result-card .total-score {
+  animation: final-score-reveal 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
+}
+
+@keyframes final-score-reveal {
+  0% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

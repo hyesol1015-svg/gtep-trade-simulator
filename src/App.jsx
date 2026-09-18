@@ -1001,13 +1001,21 @@ function getMissionBriefing(product) {
   return { budget, targetSales, targetScore, totalRounds: STRATEGY_ROUNDS.length }
 }
 
-function ChoiceCard({ option, selected, onSelect }) {
+function ChoiceCard({ option, selected, onSelect, muted = false }) {
+  // ---- 9-4단계: 다른 카드가 선택되어 있을 때 선택되지 않은 카드를
+  // 무채색(muted) 처리하기 위한 클래스만 추가한다. selected/muted는 모두
+  // 호출부(MissionDecisionScreen)가 기존 selectedId만으로 파생시켜 넘기며,
+  // 여기서는 새 상태나 판단을 만들지 않는다.
+  const className = selected
+    ? 'choice-card choice-card--selected'
+    : muted
+      ? 'choice-card choice-card--muted'
+      : 'choice-card'
+
   return (
     <button
       type="button"
-      className={
-        selected ? 'choice-card choice-card--selected' : 'choice-card'
-      }
+      className={className}
       onClick={() => onSelect(option)}
       aria-pressed={selected}
     >
@@ -1141,7 +1149,10 @@ function MissionScreen({ market, product, briefing, scores, onMissionStart }) {
       <div className="screen__grid" aria-hidden="true" />
 
       <main className="mission-card">
-        <span className="mission-badge">MISSION</span>
+        {/* ---- 9-4단계: MISSION 화면을 "게임 준비 화면"으로 ----
+            배지 문구만 MISSION BRIEFING으로 바꾸고, 아래 READY 배지는
+            새 데이터 없이 순수 문구 장식이다(어떤 값도 계산하지 않음). */}
+        <span className="mission-badge">MISSION BRIEFING</span>
 
         <h1 className="mission-title">
           <MarketFlagIcon code={market.id} className="mission-title__flag" />
@@ -1217,12 +1228,17 @@ function MissionScreen({ market, product, briefing, scores, onMissionStart }) {
           </div>
         </dl>
 
+        <span className="mission-ready-badge">&#9989; READY FOR NEGOTIATION</span>
+
         <button
           type="button"
-          className="start-button"
+          className="start-button start-game-button"
           onClick={onMissionStart}
         >
-          MISSION START
+          <span>MISSION START</span>
+          <span className="start-game-button__arrow" aria-hidden="true">
+            &#8594;
+          </span>
         </button>
       </main>
     </div>
@@ -1466,15 +1482,26 @@ function TurnProgressTrack({ turn, totalTurns }) {
 // 순수 표시용 래퍼. 이전 값은 useRef로만 기억하고, 어떤 점수/예산도 새로
 // 계산하지 않는다 — props로 들어온 값을 그대로 보여줄 뿐이다. 최초 마운트
 // 시점(턴 1 진입 등)에는 "변화"가 아니므로 펄스가 뜨지 않는다.
+// ---- 9-4단계 확장: 값이 바뀔 때 pulse와 함께 방향(▲/▼)도 짧게 보여준다.
+// 방향은 이미 갖고 있던 prevValueRef와의 비교에서만 파생시키고(새 계산
+// 없음), pulse와 같은 700ms 창 안에서만 보이다가 함께 사라지게 해 HUD가
+// 계속 화살표로 뒤덮이지 않도록 한다(값 변화가 없으면 아무 표시도 하지
+// 않음 — "muted"에 해당).
 function AnimatedStatCard({ label, value, format }) {
   const prevValueRef = useRef(value)
   const [pulse, setPulse] = useState(false)
+  const [direction, setDirection] = useState(null)
 
   useEffect(() => {
     if (prevValueRef.current !== value) {
+      const nextDirection = value > prevValueRef.current ? 'up' : 'down'
       prevValueRef.current = value
       setPulse(true)
-      const timer = setTimeout(() => setPulse(false), 700)
+      setDirection(nextDirection)
+      const timer = setTimeout(() => {
+        setPulse(false)
+        setDirection(null)
+      }, 700)
       return () => clearTimeout(timer)
     }
     return undefined
@@ -1483,7 +1510,21 @@ function AnimatedStatCard({ label, value, format }) {
   return (
     <div className={pulse ? 'stat-card stat-card--pulse' : 'stat-card'}>
       <span className="stat-card__label">{label}</span>
-      <span className="stat-card__value">{format ? format(value) : value}</span>
+      <span className="stat-card__value">
+        {format ? format(value) : value}
+        {direction && (
+          <span
+            className={
+              direction === 'up'
+                ? 'stat-card__direction stat-card__direction--up'
+                : 'stat-card__direction stat-card__direction--down'
+            }
+            aria-hidden="true"
+          >
+            {direction === 'up' ? '▲' : '▼'}
+          </span>
+        )}
+      </span>
     </div>
   )
 }
@@ -1720,6 +1761,7 @@ function MissionDecisionScreen({
               key={choice.id}
               option={choice}
               selected={selectedId === choice.id}
+              muted={selectedId !== null && selectedId !== choice.id}
               onSelect={handleSelect}
             />
           ))}
@@ -1980,7 +2022,7 @@ function BuyerResponseScreen({ market, product, scores, selections, onContinue }
       <div className="screen__glow" aria-hidden="true" />
       <div className="screen__grid" aria-hidden="true" />
 
-      <main className="buyer-card">
+      <main className="buyer-card buyer-response-card">
         <span className="price-step">BUYER RESPONSE</span>
 
         <h1 className="price-title">&#129309; BUYER RESPONSE</h1>
@@ -2003,6 +2045,21 @@ function BuyerResponseScreen({ market, product, scores, selections, onContinue }
         <span className="mission-badge">
           {tier.icon} {tier.label}
         </span>
+
+        {/* ---- 9-4단계: BUYER INTEREST 시각 미터 ----
+            새 판정 로직 없이 이미 계산된 interestScore(0~100)를 그대로
+            너비(%)로, tier.level(기존 getBuyerInterestMessage 결과)을 그대로
+            색상 클래스로만 매핑한다. */}
+        <div
+          className="interest-meter"
+          role="img"
+          aria-label={`BUYER INTEREST ${interestScore} / 100`}
+        >
+          <div
+            className={`interest-meter__fill interest-meter__fill--${tier.level}`}
+            style={{ width: `${interestScore}%` }}
+          />
+        </div>
 
         <div className="reaction-panel">
           <p>{tier.text}</p>
@@ -2310,6 +2367,23 @@ function BuyerNextMoveScreen({ market, product, scores, selections, onSelect }) 
   const options = BUYER_NEXT_MOVE_OPTIONS[tier.level]
   const situation = BUYER_NEXT_MOVE_SITUATION[tier.level]
 
+  // ---- 9-4단계: 카드를 고르는 순간 바로 다음 화면(계약 결과 계산)으로
+  // 넘어가지 않고, "선택된 모습"을 아주 짧게(220ms) 보여준 뒤 기존
+  // onSelect(actionId, tierLevel)을 그대로 호출한다. 여기서 결정되는 것은
+  // 오직 onSelect를 "언제" 부르느냐라는 연출 타이밍뿐이며, 실제 계약 결과
+  // 계산(calculateContractOutcome 등, App()이 갖고 있음)은 전혀 건드리지
+  // 않는다. 이 state는 화면이 바뀌면 컴포넌트째로 언마운트되므로 PLAY AGAIN
+  // 초기화 로직에 새로 추가할 것이 없다.
+  const [pendingId, setPendingId] = useState(null)
+
+  const handleChoose = (option) => {
+    if (pendingId) return
+    setPendingId(option.id)
+    setTimeout(() => {
+      onSelect(option.id, tier.level)
+    }, 220)
+  }
+
   return (
     <div className="buyer-screen">
       <div className="screen__glow" aria-hidden="true" />
@@ -2334,10 +2408,18 @@ function BuyerNextMoveScreen({ market, product, scores, selections, onSelect }) 
             <button
               key={option.id}
               type="button"
-              className="start-button"
-              onClick={() => onSelect(option.id, tier.level)}
+              className={
+                pendingId === option.id
+                  ? 'buyer-move-card buyer-move-card--selected'
+                  : 'buyer-move-card'
+              }
+              onClick={() => handleChoose(option)}
+              disabled={pendingId !== null && pendingId !== option.id}
             >
-              {option.label}
+              <span className="buyer-move-card__label">{option.label}</span>
+              <span className="buyer-move-card__arrow" aria-hidden="true">
+                &#8594;
+              </span>
             </button>
           ))}
         </div>
@@ -2377,7 +2459,9 @@ function ContractOutcomeScreen({ market, product, contractResult, onContinue }) 
 
         <h1 className="price-title">CONTRACT OUTCOME</h1>
 
-        <span className="mission-badge">
+        {/* ---- 9-4단계: 기존 outcome 문자열('success'/'continues'/'rejected')을
+            그대로 색상 클래스로만 매핑한다. 새 판정 조건은 추가하지 않는다. */}
+        <span className={`mission-badge mission-badge--${outcome}`}>
           {outcomeMeta.icon} {outcomeMeta.label}
         </span>
 
@@ -2527,7 +2611,13 @@ function FinalResultScreen({ scores, market, product, selections, budget, initia
                 </div>
               )}
 
-              <div className="mission-info__row">
+              <div
+                className={
+                  contractOutcome === 'success'
+                    ? 'mission-info__row mission-info__row--emphasis'
+                    : 'mission-info__row'
+                }
+              >
                 <dt>{exportPerformance.isPotential ? 'POTENTIAL CONTRACT VALUE' : 'CONTRACT VALUE'}</dt>
                 <dd>&#8361;{exportPerformance.contractValue.toLocaleString()}</dd>
               </div>
@@ -2539,20 +2629,26 @@ function FinalResultScreen({ scores, market, product, selections, budget, initia
                 </div>
               )}
 
-              <div className="mission-info__row">
+              <div
+                className={
+                  contractOutcome === 'success'
+                    ? 'mission-info__row mission-info__row--emphasis'
+                    : 'mission-info__row'
+                }
+              >
                 <dt>{exportPerformance.isPotential ? 'POTENTIAL PROFIT' : 'ESTIMATED PROFIT'}</dt>
                 <dd>&#8361;{exportPerformance.estimatedProfit.toLocaleString()}</dd>
               </div>
 
               {contractOutcome === 'success' && (
-                <div className="mission-info__row">
+                <div className="mission-info__row mission-info__row--emphasis">
                   <dt>PROFIT MARGIN</dt>
                   <dd>{exportPerformance.profitMargin}%</dd>
                 </div>
               )}
 
               {contractOutcome === 'rejected' && exportPerformance.lostOpportunity > 0 && (
-                <div className="mission-info__row">
+                <div className="mission-info__row mission-info__row--lost">
                   <dt>LOST OPPORTUNITY</dt>
                   <dd>&#8361;{exportPerformance.lostOpportunity.toLocaleString()}</dd>
                 </div>
