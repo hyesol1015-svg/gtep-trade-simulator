@@ -309,6 +309,238 @@ const MARKET_PROFILES = {
   },
 }
 
+// ================================================================
+// Phase 8: BUYER CHARACTER 시스템.
+// 같은 시장이라도 매 게임 다른 성향의 BUYER를 만나도록, MARKET_PROFILES/
+// MARKET_OPTIONS/PRODUCT_CATALOG/STRATEGY_ROUNDS(기존 데이터)는 전혀 건드
+// 리지 않고, 완전히 별도의 새 데이터 레이어(BUYER_CONCEPTS/BUYER_TYPES)를
+// 추가한다. calculateBuyerInterest/calculateContractOutcome의 기존 계산
+// 구조도 그대로 두고, 그 결과에 작은 보정값(buyerTypeModifier)만 더하는
+// 방식으로 연결한다(기존 score 계산을 대체하지 않음).
+//
+// - strategyAffinity: STRATEGY_ROUNDS의 기존 round.key/option.id를 그대로
+//   재사용하는 순수 조회 테이블이다. STRATEGY_ROUNDS 자체나 그 안의
+//   effects/버튼 문구는 전혀 수정하지 않고, "이 buyer 유형이 그 선택을
+//   얼마나 좋아하는지"만 별도로 기록한다(-6~+6, 작은 보정 폭 유지).
+const BUYER_CONCEPTS = {
+  price: {
+    id: 'price',
+    label: 'PRICE-FOCUSED BUYER',
+    shortLabel: 'PRICE BUYER',
+    accent: { color: '#D97706', tint: 'rgba(217, 119, 6, 0.1)', border: 'rgba(217, 119, 6, 0.32)' },
+    primaryConcern: 'PRICE',
+    conceptDescription: '가격 경쟁력과 비용 효율을 가장 중요하게 생각하는 바이어입니다.',
+    strategyAffinity: {
+      price: { A: 6, B: 2, C: -6 },
+      ad: { A: 2, B: 0, C: -4 },
+      localization: { A: 1, B: 0, C: -2 },
+      deal: { A: 3, B: 5, C: 0 },
+    },
+  },
+  brand: {
+    id: 'brand',
+    label: 'QUALITY & BRAND BUYER',
+    shortLabel: 'BRAND BUYER',
+    accent: { color: '#7C3AED', tint: 'rgba(124, 58, 237, 0.1)', border: 'rgba(124, 58, 237, 0.32)' },
+    primaryConcern: 'QUALITY',
+    conceptDescription: '가격보다 품질과 브랜드 가치를 우선하는 바이어입니다.',
+    strategyAffinity: {
+      price: { A: 1, B: 1, C: 6 },
+      ad: { A: -3, B: 2, C: 5 },
+      localization: { A: -3, B: 1, C: 6 },
+      deal: { A: 0, B: -2, C: 2 },
+    },
+  },
+  relationship: {
+    id: 'relationship',
+    label: 'RELATIONSHIP & NEGOTIATION BUYER',
+    shortLabel: 'RELATIONSHIP BUYER',
+    accent: { color: '#0D9488', tint: 'rgba(13, 148, 136, 0.1)', border: 'rgba(13, 148, 136, 0.32)' },
+    primaryConcern: 'LONG-TERM DEAL',
+    conceptDescription: '장기적인 신뢰와 안정적인 거래 관계를 중요하게 생각하는 바이어입니다.',
+    strategyAffinity: {
+      price: { A: 0, B: 2, C: -1 },
+      ad: { A: 0, B: 2, C: 2 },
+      localization: { A: -2, B: 3, C: 4 },
+      deal: { A: 2, B: 4, C: -2 },
+    },
+  },
+}
+
+// 9명의 BUYER(concept당 3명). 이름/성향 설명/부가 관심사만 다르고, 실제
+// 판정에 쓰이는 strategyAffinity는 concept 단위로 공유해 중복을 최소화한다.
+const BUYER_TYPES = [
+  {
+    id: 'price-01',
+    concept: 'price',
+    name: 'Daniel Cho',
+    secondaryConcern: 'COST EFFICIENCY',
+    negotiationStyle: 'AGGRESSIVE',
+    description: '가격 경쟁력을 가장 중요하게 생각하는 바이어입니다.',
+  },
+  {
+    id: 'price-02',
+    concept: 'price',
+    name: 'Priya Nair',
+    secondaryConcern: 'MOQ',
+    negotiationStyle: 'CAUTIOUS',
+    description: '가격과 최소주문수량(MOQ) 조건을 꼼꼼히 따지는 바이어입니다.',
+  },
+  {
+    id: 'price-03',
+    concept: 'price',
+    name: 'Marco Rossi',
+    secondaryConcern: 'PROMOTIONS',
+    negotiationStyle: 'OPPORTUNISTIC',
+    description: '할인과 프로모션 조건에 민감하게 반응하는 바이어입니다.',
+  },
+  {
+    id: 'brand-01',
+    concept: 'brand',
+    name: 'Aiko Tanaka',
+    secondaryConcern: 'PRODUCT DIFFERENTIATION',
+    negotiationStyle: 'ANALYTICAL',
+    description: '제품의 품질과 차별성을 꼼꼼히 검토하는 바이어입니다.',
+  },
+  {
+    id: 'brand-02',
+    concept: 'brand',
+    name: 'Elena Novak',
+    secondaryConcern: 'POSITIONING',
+    negotiationStyle: 'SELECTIVE',
+    description: '브랜드 이미지와 시장 포지셔닝을 중요하게 생각하는 바이어입니다.',
+  },
+  {
+    id: 'brand-03',
+    concept: 'brand',
+    name: 'Liam Foster',
+    secondaryConcern: 'CONSUMER RESPONSE',
+    negotiationStyle: 'CURIOUS',
+    description: '소비자 반응과 제품 차별화 포인트에 관심이 많은 바이어입니다.',
+  },
+  {
+    id: 'relationship-01',
+    concept: 'relationship',
+    name: 'Karim Yusupov',
+    secondaryConcern: 'TRUST',
+    negotiationStyle: 'PATIENT',
+    description: '장기적인 거래 관계를 중요하게 생각하는 바이어입니다.',
+  },
+  {
+    id: 'relationship-02',
+    concept: 'relationship',
+    name: 'Grace Mwangi',
+    secondaryConcern: 'RELIABILITY',
+    negotiationStyle: 'CAUTIOUS',
+    description: '안정적인 공급과 신뢰할 수 있는 파트너십을 중요하게 생각하는 바이어입니다.',
+  },
+  {
+    id: 'relationship-03',
+    concept: 'relationship',
+    name: 'Ben Whitfield',
+    secondaryConcern: 'FLEXIBILITY',
+    negotiationStyle: 'COOPERATIVE',
+    description: '유연한 협상과 원활한 커뮤니케이션을 중요하게 생각하는 바이어입니다.',
+  },
+]
+
+// 시장(MARKET_OPTIONS의 기존 id)마다 어떤 BUYER CONCEPT가 조금 더 자주
+// 등장하는지에 대한 가중치. MARKET_PROFILES.emphasisLabel/strategy의 톤을
+// 참고해 만든 값이며, 시장 데이터 자체는 전혀 바꾸지 않는다. 지나치게
+// 복잡한 확률 시스템을 피하기 위해 concept 3개에 대한 단순 가중치 하나뿐
+// 이며, 그 안에서 buyer 개인은 균등 확률로 뽑는다.
+const MARKET_BUYER_CONCEPT_WEIGHTS = {
+  JP: { price: 2, brand: 5, relationship: 3 },
+  SG: { price: 5, brand: 2, relationship: 3 },
+  UZ: { price: 5, brand: 1, relationship: 4 },
+  CN: { price: 3, brand: 3, relationship: 4 },
+  US: { price: 2, brand: 5, relationship: 3 },
+  GB: { price: 2, brand: 5, relationship: 3 },
+}
+
+// 시장이 확정되는 시점(App()의 handleMarketNext)에 한 번만 호출되는 단순
+// 가중 추첨. Math.random을 이 한 곳에서만 사용하며, product/전략 선택과는
+// 무관하다 — 시장을 다시 고르지 않는 한 게임 내내 같은 buyer가 유지된다.
+function pickBuyerForMarket(marketId) {
+  const weights = MARKET_BUYER_CONCEPT_WEIGHTS[marketId] ?? { price: 1, brand: 1, relationship: 1 }
+  const concepts = Object.keys(weights)
+  const total = concepts.reduce((sum, key) => sum + weights[key], 0)
+  let roll = Math.random() * total
+  let chosenConcept = concepts[concepts.length - 1]
+  for (const key of concepts) {
+    if (roll < weights[key]) {
+      chosenConcept = key
+      break
+    }
+    roll -= weights[key]
+  }
+  const pool = BUYER_TYPES.filter((buyerType) => buyerType.concept === chosenConcept)
+  return pool[Math.floor(Math.random() * pool.length)] ?? BUYER_TYPES[0]
+}
+
+// buyer의 concept(strategyAffinity)를 이미 이루어진 선택(selections, 기존
+// STRATEGY_ROUNDS.key -> option.id 그대로)에 대입해 작은 보정값을 만든다.
+// 기존 calculateBuyerInterest/calculateContractOutcome의 계산 구조는 전혀
+// 바꾸지 않고, 그 결과에 더해지는 modifier로만 쓰인다.
+function getBuyerTypeModifier(buyerType, selections) {
+  if (!buyerType) return 0
+  const affinity = BUYER_CONCEPTS[buyerType.concept]?.strategyAffinity
+  if (!affinity) return 0
+  let total = 0
+  for (const roundKey of Object.keys(selections)) {
+    const optionId = selections[roundKey]
+    const roundAffinity = affinity[roundKey]
+    if (roundAffinity && typeof roundAffinity[optionId] === 'number') {
+      total += roundAffinity[optionId]
+    }
+  }
+  return clampValue(total, -15, 15)
+}
+
+// BUYER RESPONSE의 POSITIVE/CONCERNS 목록에 buyer 성향에 따른 후보를
+// 하나씩 추가하기 위한 헬퍼. getBuyerConcerns/getBuyerPositives의 기존
+// 후보 생성 로직(상품/점수 기반)은 전혀 건드리지 않고, 같은 형태
+// ({label, text, severity})의 후보를 하나 더 만들어 반환할 뿐이다. 새
+// 문구를 지어내는 대신 STRATEGY_ROUNDS의 기존 resultLabel/option.title을
+// 그대로 인용해 "실제로 고른 전략"과 연결한다.
+function getBuyerTypeStrategyReaction(buyerType, selections) {
+  if (!buyerType) return { positive: null, concern: null }
+  const affinity = BUYER_CONCEPTS[buyerType.concept]?.strategyAffinity
+  if (!affinity) return { positive: null, concern: null }
+
+  let best = null
+  let worst = null
+  for (const round of STRATEGY_ROUNDS) {
+    const optionId = selections[round.key]
+    if (!optionId) continue
+    const value = affinity[round.key]?.[optionId]
+    if (typeof value !== 'number') continue
+    const option = round.options.find((o) => o.id === optionId)
+    if (!option) continue
+    const entry = { round, option, value }
+    if (value >= 4 && (!best || value > best.value)) best = entry
+    if (value <= -4 && (!worst || value < worst.value)) worst = entry
+  }
+
+  const concept = BUYER_CONCEPTS[buyerType.concept]
+  const positive = best
+    ? {
+        label: `${concept.shortLabel} APPROVAL`,
+        text: `${best.round.resultLabel}에서 선택한 '${best.option.title}'이(가) 이 바이어의 우선순위와 잘 맞습니다.`,
+        severity: 40 + Math.min(60, Math.abs(best.value) * 8),
+      }
+    : null
+  const concern = worst
+    ? {
+        label: `${concept.shortLabel} CONCERN`,
+        text: `${worst.round.resultLabel}에서 선택한 '${worst.option.title}'이(가) 이 바이어의 우선순위와 맞지 않아 우려됩니다.`,
+        severity: 40 + Math.min(60, Math.abs(worst.value) * 8),
+      }
+    : null
+
+  return { positive, concern }
+}
+
 // Simple inline-SVG flags (viewBox 0 0 3 2) so country flags render
 // consistently across platforms/fonts instead of relying on
 // regional-indicator flag emoji.
@@ -1244,7 +1476,7 @@ function StartScreen({ onStart }) {
   )
 }
 
-function MissionScreen({ market, product, briefing, scores, onMissionStart, onBack }) {
+function MissionScreen({ market, product, briefing, scores, buyer, onMissionStart, onBack }) {
   const profile = MARKET_PROFILES[market.id]
 
   return (
@@ -1271,6 +1503,14 @@ function MissionScreen({ market, product, briefing, scores, onMissionStart, onBa
           <MarketFlagIcon code={market.id} className="mission-title__flag" />
           {market.name} MARKET
         </h1>
+
+        {/* ---- Phase 8: MISSION 단계에서부터 이번 판에 만난 BUYER가
+            누구인지(이름/Concept/성향) 미리 확인할 수 있게 한다. 새 계산
+            없이 buyer(BUYER_TYPES 항목)를 BuyerIdentityCard에 그대로
+            넘길 뿐이다. ---- */}
+        {buyer && (
+          <BuyerIdentityCard market={market} profile={profile} buyerType={buyer} />
+        )}
 
         <div className="mission-body">
           <p>
@@ -2114,7 +2354,7 @@ function MissionDecisionScreen({
 // 전략 보너스. 마지막에 clampValue로 0~100 정규화해 단순 합산으로 값이
 // 튀지 않도록 한다. 특정 국가가 항상 유리하지 않도록 국가 가중치 폭은
 // 작게(약 0~3점) 유지한다.
-function calculateBuyerInterest(scores, market, product, selections) {
+function calculateBuyerInterest(scores, market, product, selections, buyerType = null) {
   const profile = MARKET_PROFILES[market.id]
 
   const base =
@@ -2136,7 +2376,13 @@ function calculateBuyerInterest(scores, market, product, selections) {
   if (selections.price === 'B') strategyWeight += 3
   if (selections.deal === 'A' || selections.deal === 'B') strategyWeight += 3
 
-  const raw = base + countryWeight + productWeight + strategyWeight
+  // Phase 8: 같은 시장/상품/전략이라도 만난 BUYER의 성향(Concept)에 따라
+  // BUYER INTEREST가 조금씩 달라지도록, 기존 계산 결과에 작은 보정값만
+  // 더한다(base/countryWeight/productWeight/strategyWeight 로직은 전혀
+  // 수정하지 않음. buyerType이 없으면 보정값은 0이라 기존 결과와 동일).
+  const buyerTypeWeight = buyerType ? getBuyerTypeModifier(buyerType, selections) : 0
+
+  const raw = base + countryWeight + productWeight + strategyWeight + buyerTypeWeight
   return clampValue(Math.round(raw), 0, 100)
 }
 
@@ -2165,27 +2411,31 @@ function getBuyerInterestMessage(interestScore, market) {
 
 // 바이어가 실제로 말하는 것 같은 짧은 코멘트. 무작위가 아니라 실제 결과
 // (interestScore 구간)와 상품/국가 데이터로 결정된다.
-function getBuyerComment(market, product, interestScore) {
+function getBuyerComment(market, product, interestScore, buyerType = null) {
+  // Phase 8: buyerType이 있으면 실제 만난 BUYER의 이름을 화자로 쓰고,
+  // 없으면(하위 호환) 기존처럼 시장명으로 표시한다. 문구 내용/판정 구간은
+  // 전혀 수정하지 않는다.
+  const speaker = buyerType ? buyerType.name : `${market.nameKo} 바이어`
   if (interestScore >= 80) {
-    return `"We see strong potential in this market. The pricing and positioning are attractive." — ${market.nameKo} 바이어`
+    return `"We see strong potential in this market. The pricing and positioning are attractive." — ${speaker}`
   }
   if (interestScore >= 60) {
     return product.moq >= 1000
-      ? `"The product looks promising, but we'd like to discuss the MOQ." — ${market.nameKo} 바이어`
-      : `"The product looks promising, and we'd like to move forward with a few adjustments." — ${market.nameKo} 바이어`
+      ? `"The product looks promising, but we'd like to discuss the MOQ." — ${speaker}`
+      : `"The product looks promising, and we'd like to move forward with a few adjustments." — ${speaker}`
   }
   if (interestScore >= 40) {
-    return `"We see potential, but the offer needs more work before we're convinced." — ${market.nameKo} 바이어`
+    return `"We see potential, but the offer needs more work before we're convinced." — ${speaker}`
   }
   return product.localizationDifficulty === '높음'
-    ? `"The product needs stronger localization before we can proceed." — ${market.nameKo} 바이어`
-    : `"The current offer does not sufficiently meet our expectations." — ${market.nameKo} 바이어`
+    ? `"The product needs stronger localization before we can proceed." — ${speaker}`
+    : `"The current offer does not sufficiently meet our expectations." — ${speaker}`
 }
 
 // 바이어가 우려하는 요소를 실제 게임 데이터(상품 특성 + 선택한 전략 +
 // 현재 점수)로부터 최대 2개까지 결정한다. 무작위 생성이 아니라, 각 후보의
 // severity(심각도)를 계산해 가장 두드러지는 순서로 정렬 후 상위 2개만 뽑는다.
-function getBuyerConcerns(product, selections, scores) {
+function getBuyerConcerns(product, selections, scores, buyerType = null) {
   const candidates = []
 
   if (product.moq >= 1000) {
@@ -2206,12 +2456,23 @@ function getBuyerConcerns(product, selections, scores) {
     candidates.push({ label: 'LIMITED BRAND AWARENESS', text: '광고 효율이 낮아 브랜드 인지도 확보가 더딥니다.', severity: 100 - scores.adEfficiency })
   }
 
+  // Phase 8: 만난 BUYER의 Concept과 맞지 않는 선택이 있었다면, 그 BUYER
+  // 특유의 우려사항을 후보에 하나 추가한다(getBuyerTypeStrategyReaction은
+  // 플레이어가 실제로 고른 STRATEGY_ROUNDS 선택지 텍스트에서 문구를
+  // 만들어낼 뿐, 새 판정 로직을 추가하지 않는다).
+  if (buyerType) {
+    const reaction = getBuyerTypeStrategyReaction(buyerType, selections)
+    if (reaction.concern) {
+      candidates.push({ label: reaction.concern.label, text: reaction.concern.text, severity: reaction.concern.severity })
+    }
+  }
+
   return candidates.sort((a, b) => b.severity - a.severity).slice(0, 2)
 }
 
 // 바이어가 긍정적으로 평가하는 요소를 실제 게임 데이터로부터 최대 2개까지
 // 결정한다. 후보가 하나도 없으면 상품 자체의 잠재력을 기본값으로 보여준다.
-function getBuyerPositives(scores, selections) {
+function getBuyerPositives(scores, selections, buyerType = null) {
   const candidates = []
 
   if (scores.marketFit >= 70) {
@@ -2225,6 +2486,15 @@ function getBuyerPositives(scores, selections) {
   }
   if (scores.trust >= 65) {
     candidates.push({ label: 'HIGH BUYER TRUST', text: '바이어 신뢰도가 높습니다.', severity: scores.trust })
+  }
+
+  // Phase 8: 만난 BUYER의 Concept과 잘 맞는 선택이 있었다면, 그 BUYER
+  // 특유의 호평 후보를 하나 추가한다(위 getBuyerConcerns와 동일한 방식).
+  if (buyerType) {
+    const reaction = getBuyerTypeStrategyReaction(buyerType, selections)
+    if (reaction.positive) {
+      candidates.push({ label: reaction.positive.label, text: reaction.positive.text, severity: reaction.positive.severity })
+    }
   }
 
   if (candidates.length === 0) {
@@ -2244,7 +2514,7 @@ function getBuyerPositives(scores, selections) {
 // Buyer Identity: 국기 + "{시장 한글명} 바이어" + 기존 MARKET_PROFILES의
 // buyerIntro(있는 그대로)를 보여주는 간단한 아바타/배지 영역. 새 국가 정보나
 // 캐릭터 설정은 만들지 않는다 — market/profile에 이미 있는 값만 사용한다.
-function BuyerIdentityCard({ market, profile, accent }) {
+function BuyerIdentityCard({ market, profile, accent, buyerType }) {
   const style = accent
     ? {
         '--market-accent': accent.color,
@@ -2252,16 +2522,32 @@ function BuyerIdentityCard({ market, profile, accent }) {
         '--market-accent-border': accent.border,
       }
     : undefined
+  // Phase 8: buyerType(랜덤으로 뽑힌 실제 BUYER)이 주어지면 이름 + CONCEPT
+  // 배지 + 성향 설명을 함께 보여준다. buyerType이 없을 때는 기존 Phase 5
+  // 표시(시장명 바이어 + buyerIntro)를 그대로 유지해 하위 호환된다.
+  const concept = buyerType ? BUYER_CONCEPTS[buyerType.concept] : null
+  const conceptBadgeStyle = concept
+    ? { color: concept.accent.color, background: concept.accent.tint, borderColor: concept.accent.border }
+    : undefined
   return (
     <div className="buyer-identity" style={style}>
       <span className="buyer-identity__avatar" aria-hidden="true">
         <MarketFlagIcon code={market.id} className="buyer-identity__flag" />
       </span>
       <span className="buyer-identity__text">
-        <span className="buyer-identity__name">{market.nameKo} 바이어</span>
+        <span className="buyer-identity__name">
+          {buyerType ? buyerType.name : `${market.nameKo} 바이어`}
+        </span>
         <span className="buyer-identity__role">{market.name} BUYER</span>
-        {profile?.buyerIntro && (
-          <span className="buyer-identity__intro">{profile.buyerIntro}</span>
+        {concept && (
+          <span className="mission-badge buyer-identity__concept-badge" style={conceptBadgeStyle}>
+            {concept.label}
+          </span>
+        )}
+        {(buyerType?.description || profile?.buyerIntro) && (
+          <span className="buyer-identity__intro">
+            {buyerType ? buyerType.description : profile.buyerIntro}
+          </span>
         )}
       </span>
     </div>
@@ -2299,13 +2585,13 @@ function BuyerInterestMeter({ interestScore, level }) {
 // .buyer-card(App.css에 이미 정의돼 있었지만 미사용이던 클래스)와
 // .total-score/.mission-badge/.reaction-panel/.stat-grid/.ai-feedback-panel/
 // .start-button을 그대로 재사용해 새 CSS 없이 기존 디자인과 통일한다.
-function BuyerResponseScreen({ market, product, scores, selections, onContinue }) {
+function BuyerResponseScreen({ market, product, scores, selections, buyer, onContinue }) {
   const profile = MARKET_PROFILES[market.id]
-  const interestScore = calculateBuyerInterest(scores, market, product, selections)
+  const interestScore = calculateBuyerInterest(scores, market, product, selections, buyer)
   const tier = getBuyerInterestMessage(interestScore, market)
-  const comment = getBuyerComment(market, product, interestScore)
-  const concerns = getBuyerConcerns(product, selections, scores)
-  const positives = getBuyerPositives(scores, selections)
+  const comment = getBuyerComment(market, product, interestScore, buyer)
+  const concerns = getBuyerConcerns(product, selections, scores, buyer)
+  const positives = getBuyerPositives(scores, selections, buyer)
 
   return (
     <div className="buyer-screen">
@@ -2321,7 +2607,28 @@ function BuyerResponseScreen({ market, product, scores, selections, onContinue }
         {/* ---- Phase 5: Buyer Identity. 기존 MARKET_OPTIONS/MARKET_PROFILES
             값(market.name/nameKo, profile.buyerIntro)만 사용해 "이 시장의
             실제 거래 상대방"이 등장한 느낌을 준다. 새 국가/캐릭터 정보 없음. ---- */}
-        <BuyerIdentityCard market={market} profile={profile} accent={MARKET_ACCENT[market.id]} />
+        <BuyerIdentityCard market={market} profile={profile} accent={MARKET_ACCENT[market.id]} buyerType={buyer} />
+
+        {/* ---- Phase 8: PLAYER가 읽을 수 있는 BUYER 성향 정보. 새 판정
+            로직 없이 buyer(BUYER_TYPES 항목)와 BUYER_CONCEPTS의 기존 값만
+            그대로 보여준다(기존 .mission-info 카드 스타일 재사용). ---- */}
+        {buyer && (
+          <dl className="mission-info buyer-profile-info">
+            <div className="mission-info__row">
+              <dt>PRIMARY CONCERN</dt>
+              <dd>{BUYER_CONCEPTS[buyer.concept]?.primaryConcern}</dd>
+            </div>
+            <div className="mission-info__row">
+              <dt>SECONDARY CONCERN</dt>
+              <dd>{buyer.secondaryConcern}</dd>
+            </div>
+            <div className="mission-info__row">
+              <dt>NEGOTIATION STYLE</dt>
+              <dd>{buyer.negotiationStyle}</dd>
+            </div>
+          </dl>
+        )}
+
         <p className="price-lead">{product.name}</p>
 
         <div className={`total-score total-score--${tier.level}`}>
@@ -2447,6 +2754,14 @@ const BUYER_MOVE_ICONS = {
   lower_price: '\u{1F4B0}',
   final_offer: '\u23F3',
   walk_away: '\u{1F6AA}',
+  // Phase 8: BUYER Concept별 BUYER'S NEXT MOVE 선택지(아래
+  // BUYER_NEXT_MOVE_CONCEPT_OPTIONS)에서만 쓰이는 새 행동 아이콘.
+  request_discount: '\u{1F3F7}',
+  request_product_details: '\u{1F4CB}',
+  request_marketing_data: '\u{1F4CA}',
+  discuss_long_term_deal: '\u{1F4C5}',
+  request_supply_plan: '\u{1F69A}',
+  propose_partnership: '\u{1F91D}',
 }
 
 const BUYER_NEXT_MOVE_OPTIONS = {
@@ -2470,6 +2785,49 @@ const BUYER_NEXT_MOVE_OPTIONS = {
     { id: 'lower_price', label: 'LOWER PRICE' },
     { id: 'walk_away', label: 'WALK AWAY' },
   ],
+}
+
+// Phase 8: BUYER INTEREST가 high/moderate 구간일 때만, 만난 BUYER의
+// Concept(price/brand/relationship)에 따라 BUYER'S NEXT MOVE 선택지
+// 구성이 달라지게 한다. low/verylow 구간은 협상이 이미 어려운 상황이라
+// 기존 BUYER_NEXT_MOVE_OPTIONS(공통)를 그대로 쓴다. actionId는 최대한
+// 기존 값을 재사용하고, Concept 색깔이 뚜렷한 경우에만 새 actionId를
+// 추가한다(calculateContractOutcome에도 이 id들에 대한 case가 있다).
+const BUYER_NEXT_MOVE_CONCEPT_OPTIONS = {
+  high: {
+    price: [
+      { id: 'accept_offer', label: 'ACCEPT OFFER' },
+      { id: 'negotiate_price', label: 'PRICE NEGOTIATION' },
+      { id: 'request_discount', label: 'DISCOUNT REQUEST' },
+    ],
+    brand: [
+      { id: 'accept_offer', label: 'ACCEPT OFFER' },
+      { id: 'request_sample', label: 'ASK FOR SAMPLE' },
+      { id: 'request_marketing_data', label: 'REQUEST MARKETING DATA' },
+    ],
+    relationship: [
+      { id: 'accept_offer', label: 'ACCEPT OFFER' },
+      { id: 'discuss_long_term_deal', label: 'DISCUSS LONG-TERM DEAL' },
+      { id: 'propose_partnership', label: 'PROPOSE PARTNERSHIP' },
+    ],
+  },
+  moderate: {
+    price: [
+      { id: 'negotiate_price', label: 'PRICE NEGOTIATION' },
+      { id: 'negotiate_moq', label: 'MOQ NEGOTIATION' },
+      { id: 'request_discount', label: 'DISCOUNT REQUEST' },
+    ],
+    brand: [
+      { id: 'request_product_details', label: 'REQUEST PRODUCT DETAILS' },
+      { id: 'request_marketing_data', label: 'REQUEST MARKETING DATA' },
+      { id: 'request_sample', label: 'ASK FOR SAMPLE' },
+    ],
+    relationship: [
+      { id: 'discuss_long_term_deal', label: 'DISCUSS LONG-TERM DEAL' },
+      { id: 'request_supply_plan', label: 'REQUEST SUPPLY PLAN' },
+      { id: 'improve_localization', label: 'IMPROVE LOCALIZATION' },
+    ],
+  },
 }
 
 // BUYER INTEREST 구간(80/60/40)에 따라 성사 시 주문량을 합리적으로 정한다.
@@ -2513,7 +2871,7 @@ function getContractRejectionReasons(product, selections, scores) {
 // 국가/상품/전략을 반영한 값)를 기준으로, 행동별 보정값 + 국가·상품 맥락을
 // 더해 0~100 dealScore를 만들고, 구간에 따라 success/continues/rejected를
 // 정한다. Math.random을 쓰지 않으므로 같은 입력이면 항상 같은 결과다.
-function calculateContractOutcome(buyerInterest, scores, market, product, selections, actionId) {
+function calculateContractOutcome(buyerInterest, scores, market, product, selections, actionId, buyerType = null) {
   const profile = MARKET_PROFILES[market.id]
 
   let delta = 0
@@ -2552,6 +2910,29 @@ function calculateContractOutcome(buyerInterest, scores, market, product, select
     case 'walk_away':
       forcedRejected = true
       break
+    // ---- Phase 8: BUYER_NEXT_MOVE_CONCEPT_OPTIONS의 high/moderate 전용
+    // actionId들. 기존 case는 하나도 수정하지 않고 새 case만 추가한다.
+    case 'request_discount':
+      delta = selections.price === 'C' ? 8 : 5
+      break
+    case 'request_product_details':
+      delta = 6
+      capContinues = true
+      break
+    case 'request_marketing_data':
+      delta = scores.adEfficiency >= 60 ? 8 : 4
+      capContinues = true
+      break
+    case 'discuss_long_term_deal':
+      delta = scores.trust >= 60 ? 10 : 5
+      break
+    case 'request_supply_plan':
+      delta = 6
+      capContinues = true
+      break
+    case 'propose_partnership':
+      delta = scores.trust >= 65 ? 10 : 6
+      break
     default:
       delta = 0
   }
@@ -2561,7 +2942,13 @@ function calculateContractOutcome(buyerInterest, scores, market, product, select
   if (product.demand === '높음') contextAdjustment += 3
   contextAdjustment += Math.round(((profile.scoreWeights.trust + profile.scoreWeights.marketFit) / 2 - 1) * 10)
 
-  const dealScore = clampValue(Math.round(buyerInterest + delta + contextAdjustment), 0, 100)
+  // Phase 8: 만난 BUYER의 성향과 이번 판의 전략 선택이 얼마나 맞았는지를
+  // 작은 보정값(기존 buyerInterest에 이미 반영된 것보다 절반 폭)으로
+  // CONTRACT OUTCOME에도 한 번 더 반영한다. 기존 delta/contextAdjustment
+  // 계산 구조는 전혀 바꾸지 않고, 그 위에 더하기만 한다.
+  const buyerTypeAdjustment = buyerType ? Math.round(getBuyerTypeModifier(buyerType, selections) / 2) : 0
+
+  const dealScore = clampValue(Math.round(buyerInterest + delta + contextAdjustment + buyerTypeAdjustment), 0, 100)
 
   let outcome
   if (forcedRejected) {
@@ -2674,11 +3061,16 @@ function calculateExportPerformance(contractResult, buyerInterest, scores, produ
 // TURN 4 → BUYER RESPONSE 다음, CONTRACT OUTCOME 이전에 표시되는 화면.
 // 기존 .buyer-screen/.buyer-card/.mission-badge/.reaction-panel/.choice-list/
 // .start-button을 그대로 재사용해 새 CSS 없이 기존 디자인과 통일한다.
-function BuyerNextMoveScreen({ market, product, scores, selections, onSelect }) {
+function BuyerNextMoveScreen({ market, product, scores, selections, buyer, onSelect }) {
   const profile = MARKET_PROFILES[market.id]
-  const interestScore = calculateBuyerInterest(scores, market, product, selections)
+  const interestScore = calculateBuyerInterest(scores, market, product, selections, buyer)
   const tier = getBuyerInterestMessage(interestScore, market)
-  const options = BUYER_NEXT_MOVE_OPTIONS[tier.level]
+  // Phase 8: high/moderate 구간에서는 만난 BUYER의 Concept에 따라 선택지
+  // 구성이 달라진다. low/verylow 구간과 buyer가 없는 경우(하위 호환)는
+  // 기존 BUYER_NEXT_MOVE_OPTIONS를 그대로 사용한다.
+  const options =
+    (buyer && BUYER_NEXT_MOVE_CONCEPT_OPTIONS[tier.level]?.[buyer.concept]) ??
+    BUYER_NEXT_MOVE_OPTIONS[tier.level]
   const situation = BUYER_NEXT_MOVE_SITUATION[tier.level]
 
   // ---- 9-4단계: 카드를 고르는 순간 바로 다음 화면(계약 결과 계산)으로
@@ -2711,7 +3103,7 @@ function BuyerNextMoveScreen({ market, product, scores, selections, onSelect }) 
         {/* ---- Phase 5: BUYER RESPONSE와 같은 Buyer Identity를 다시 보여줘
             "같은 바이어가 이어서 반응하고 있다"는 연결감을 준다. 새 정보
             없이 market/profile 기존 값만 재사용. ---- */}
-        <BuyerIdentityCard market={market} profile={profile} accent={MARKET_ACCENT[market.id]} />
+        <BuyerIdentityCard market={market} profile={profile} accent={MARKET_ACCENT[market.id]} buyerType={buyer} />
 
         {/* ---- 10단계: BUYER RESPONSE → BUYER'S NEXT MOVE 연결. 이 화면의
             선택지가 왜 이 3개인지(BUYER_NEXT_MOVE_OPTIONS[tier.level])를
@@ -2850,7 +3242,7 @@ function ContractOutcomeScreen({ market, product, contractResult, onContinue }) 
   )
 }
 
-function FinalResultScreen({ scores, market, product, selections, budget, initialBudget, onPlayAgain, contractResult }) {
+function FinalResultScreen({ scores, market, product, selections, budget, initialBudget, onPlayAgain, contractResult, buyer }) {
   // 8-2단계: 기존 calculateFinalScore()는 그대로 두고(baseTotalScore), 그
   // 결과에 CONTRACT OUTCOME을 작은 폭으로 결합한 값을 실제 FINAL RESULT의
   // TOTAL SCORE로 사용한다. contractOutcome이 없으면(이론상 도달 불가하지만
@@ -2862,7 +3254,7 @@ function FinalResultScreen({ scores, market, product, selections, budget, initia
   // 8-3단계: EXPORT PERFORMANCE. BUYER INTEREST는 8-1의 calculateBuyerInterest를
   // 그대로 재사용(재계산 방식 변경 없음)하고, contractResult(8-2에서 이미 계산된
   // outcome/orderQuantity)를 그대로 입력으로 넘겨 중복 계산 없이 파생값만 만든다.
-  const buyerInterestScore = calculateBuyerInterest(scores, market, product, selections)
+  const buyerInterestScore = calculateBuyerInterest(scores, market, product, selections, buyer)
   const exportPerformance = contractResult
     ? calculateExportPerformance(contractResult, buyerInterestScore, scores, product)
     : null
@@ -3368,6 +3760,9 @@ function App() {
   // PLAY AGAIN 시 함께 초기화된다.
   const [buyerDecision, setBuyerDecision] = useState(null)
   const [contractResult, setContractResult] = useState(null)
+  // Phase 8: 이번 플레이에서 만난 BUYER(9명 중 1명). 시장이 확정되는 시점
+  // (handleMarketNext)에 한 번 뽑히고, PLAY AGAIN 시 초기화된다.
+  const [buyer, setBuyer] = useState(null)
 
   // UI/UX 리디자인: 화면(또는 턴)이 바뀔 때 이전 화면에서 아래로 스크롤된
   // 위치가 그대로 이어져 새 화면의 제목/헤더가 화면 밖으로 가려지는 문제를
@@ -3394,6 +3789,7 @@ function App() {
 
   const handleMarketNext = () => {
     console.log('SELECTED MARKET', selectedMarket)
+    setBuyer(pickBuyerForMarket(selectedMarket))
     setScreen('select-product')
   }
 
@@ -3462,8 +3858,8 @@ function App() {
   }
 
   const handleBuyerNextMoveSelect = (actionId) => {
-    const interestScore = calculateBuyerInterest(scores, market, product, selections)
-    const result = calculateContractOutcome(interestScore, scores, market, product, selections, actionId)
+    const interestScore = calculateBuyerInterest(scores, market, product, selections, buyer)
+    const result = calculateContractOutcome(interestScore, scores, market, product, selections, actionId, buyer)
     setBuyerDecision(actionId)
     setContractResult(result)
     setScreen('contract-outcome')
@@ -3483,6 +3879,7 @@ function App() {
     setInitialBudget(0)
     setBuyerDecision(null)
     setContractResult(null)
+    setBuyer(null)
     setScreen('start')
   }
 
@@ -3514,6 +3911,7 @@ function App() {
         product={product}
         briefing={getMissionBriefing(product)}
         scores={scores}
+        buyer={buyer}
         onMissionStart={handleMissionStart}
         onBack={handleBackToProduct}
       />
@@ -3542,6 +3940,7 @@ function App() {
         product={product}
         scores={scores}
         selections={selections}
+        buyer={buyer}
         onContinue={handleContinueFromBuyerResponse}
       />
     )
@@ -3554,6 +3953,7 @@ function App() {
         product={product}
         scores={scores}
         selections={selections}
+        buyer={buyer}
         onSelect={handleBuyerNextMoveSelect}
       />
     )
@@ -3582,6 +3982,7 @@ function App() {
         initialBudget={initialBudget}
         onPlayAgain={handlePlayAgain}
         contractResult={contractResult}
+        buyer={buyer}
       />
     )
   }

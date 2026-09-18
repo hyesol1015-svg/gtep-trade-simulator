@@ -378,6 +378,17 @@
   color: #64748B;
 }
 
+/* ---- Phase 8: Buyer Identity 안에 들어가는 CONCEPT 배지. 기존
+   .mission-badge를 재사용하되(색은 인라인 style로 Concept별 accent 적용),
+   좁은 buyer-identity__text 컬럼 안에 맞도록 크기/여백만 줄인다. ---- */
+.buyer-identity__concept-badge {
+  align-self: flex-start;
+  margin-top: 4px;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  padding: 4px 10px;
+}
+
 .mission-body {
   display: flex;
   flex-direction: column;
