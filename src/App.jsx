@@ -310,6 +310,42 @@ const MARKET_PROFILES = {
 }
 
 // ================================================================
+// Phase 9 보완: 국가별 온라인 플랫폼 정보.
+// 순수 "시장 정보/전략 정보" 표시용 데이터로, MARKET_PROFILES(점수 계산에
+// 쓰이는 scoreWeights/specialRules 등)와는 완전히 분리된 별도 구조다.
+// 점수·판정 로직에는 전혀 연결되지 않으며, MARKET SELECT 이후 MISSION
+// 화면에서 "이 시장에 진출하면 어떤 온라인 채널을 쓸 수 있는지"를 보여
+//주는 용도로만 쓰인다. MARKET_OPTIONS/MARKET_PROFILES의 기존 키 구조는
+// 건드리지 않고, 같은 market id로 조회하는 새 맵을 추가하는 방식이다.
+// ================================================================
+const MARKET_ONLINE_PLATFORMS = {
+  JP: {
+    platforms: ['Qoo10 Japan'],
+    trait: 'Korean brands · Reviews · Promotions',
+  },
+  SG: {
+    platforms: ['Shopee'],
+    trait: 'Cross-border · Price competition · Online sales',
+  },
+  UZ: {
+    platforms: ['Uzum Market'],
+    trait: 'Local marketplace · Logistics · Fast delivery',
+  },
+  CN: {
+    platforms: ['Tmall', 'JD.com'],
+    trait: 'Brand presence · Large marketplace · Logistics',
+  },
+  US: {
+    platforms: ['Amazon'],
+    trait: 'Global reach · Reviews · Competition',
+  },
+  GB: {
+    platforms: ['Amazon', 'eBay'],
+    trait: 'Marketplace · Brand value · Online retail',
+  },
+}
+
+// ================================================================
 // Phase 8: BUYER CHARACTER 시스템.
 // 같은 시장이라도 매 게임 다른 성향의 BUYER를 만나도록, MARKET_PROFILES/
 // MARKET_OPTIONS/PRODUCT_CATALOG/STRATEGY_ROUNDS(기존 데이터)는 전혀 건드
@@ -1478,6 +1514,7 @@ function StartScreen({ onStart }) {
 
 function MissionScreen({ market, product, briefing, scores, buyer, onMissionStart, onBack }) {
   const profile = MARKET_PROFILES[market.id]
+  const platformInfo = MARKET_ONLINE_PLATFORMS[market.id]
 
   return (
     <div className="mission-screen">
@@ -1590,6 +1627,26 @@ function MissionScreen({ market, product, briefing, scores, buyer, onMissionStar
             <dd>{scores.marketFit}</dd>
           </div>
         </dl>
+
+        {/* ---- Phase 9 보완: 국가별 온라인 플랫폼. 순수 정보 표시 패널이며
+            점수/판정에는 관여하지 않는다. platformInfo가 없는 시장이어도
+            (데이터가 6개 시장 모두에 있으므로 발생하지 않지만) 안전하게
+            생략되도록 조건부 렌더링한다. ---- */}
+        {platformInfo && (
+          <div className="online-platform-panel">
+            <span className="online-platform-panel__label">
+              &#128722; {platformInfo.platforms.length > 1 ? 'ONLINE PLATFORMS' : 'ONLINE PLATFORM'}
+            </span>
+            <div className="online-platform-panel__chips">
+              {platformInfo.platforms.map((name) => (
+                <span className="online-platform-chip" key={name}>
+                  &#128722; {name}
+                </span>
+              ))}
+            </div>
+            <p className="online-platform-panel__trait">{platformInfo.trait}</p>
+          </div>
+        )}
 
         <span className="mission-ready-badge">&#9989; READY FOR NEGOTIATION</span>
 
