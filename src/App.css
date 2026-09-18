@@ -684,6 +684,47 @@
   box-shadow: none;
 }
 
+/* ---- 11단계: BACK 버튼. 메인 CTA(.start-button)보다 작고 조용한 보조
+   버튼으로, 각 카드의 맨 위에 왼쪽 정렬로 배치된다. 색상 토큰(테두리/배경
+   rgba(148, 197, 255, ...), 텍스트 #9fb0cc)은 다른 화면의 보조 요소와
+   동일한 것을 재사용한다. */
+.back-button {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #9fb0cc;
+  background: rgba(148, 197, 255, 0.04);
+  border: 1px solid rgba(148, 197, 255, 0.16);
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+
+.back-button:hover {
+  color: #f5f8ff;
+  border-color: rgba(148, 197, 255, 0.32);
+  background: rgba(148, 197, 255, 0.08);
+  transform: translateX(-2px);
+}
+
+.back-button:active {
+  transform: translateX(-1px) scale(0.98);
+}
+
+.back-button:focus-visible {
+  outline: 2px solid rgba(125, 211, 252, 0.6);
+  outline-offset: 2px;
+}
+
 .stat-grid {
   width: 100%;
   display: grid;

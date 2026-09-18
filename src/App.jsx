@@ -1160,7 +1160,7 @@ function StartScreen({ onStart }) {
   )
 }
 
-function MissionScreen({ market, product, briefing, scores, onMissionStart }) {
+function MissionScreen({ market, product, briefing, scores, onMissionStart, onBack }) {
   const profile = MARKET_PROFILES[market.id]
 
   return (
@@ -1169,6 +1169,13 @@ function MissionScreen({ market, product, briefing, scores, onMissionStart }) {
       <div className="screen__grid" aria-hidden="true" />
 
       <main className="mission-card">
+        {/* ---- 11단계: PRODUCT SELECT로 돌아가는 보조 CTA. MISSION START를
+            누르기 전(이 화면이 떠 있는 동안)에만 존재하며, 클릭해도 이미
+            선택된 MARKET/PRODUCT 상태는 그대로 유지된다. ---- */}
+        <button type="button" className="back-button" onClick={onBack}>
+          &#8592; BACK
+        </button>
+
         {/* ---- 9-4단계: MISSION 화면을 "게임 준비 화면"으로 ----
             배지 문구만 MISSION BRIEFING으로 바꾸고, 아래 READY 배지는
             새 데이터 없이 순수 문구 장식이다(어떤 값도 계산하지 않음). */}
@@ -1358,9 +1365,7 @@ function SelectMarketScreen({ selectedMarket, onSelect, onNext }) {
   )
 }
 
-function SelectProductScreen({ market, onNext }) {
-  const [selectedId, setSelectedId] = useState(null)
-
+function SelectProductScreen({ market, selectedProductId, onNext, onBack }) {
   const productChoices = getProductsByMarket(market?.id).map((product, index) => ({
     id: String(index + 1),
     title: product.name,
@@ -1377,6 +1382,15 @@ function SelectProductScreen({ market, onNext }) {
     product,
   }))
 
+  // ---- 11단계: MISSION → BACK으로 돌아왔을 때 이미 선택했던 PRODUCT가
+  // 그대로 선택된 채로 보이도록, 마운트 시점의 초기 선택값만 기존
+  // selectedProductId(App()의 기존 상태, 새 상태 아님)에서 찾아 seed한다.
+  // 이후 사용자가 자유롭게 다른 상품을 다시 고를 수 있는 기존 동작은
+  // 그대로 유지된다.
+  const initialSelectedId =
+    productChoices.find((choice) => choice.product.id === selectedProductId)?.id ?? null
+  const [selectedId, setSelectedId] = useState(initialSelectedId)
+
   const selectedChoice =
     productChoices.find((choice) => choice.id === selectedId) ?? null
 
@@ -1391,6 +1405,13 @@ function SelectProductScreen({ market, onNext }) {
       <div className="screen__grid" aria-hidden="true" />
 
       <main className="product-card">
+        {/* ---- 11단계: MARKET SELECT로 돌아가는 보조 CTA. 메인 CTA(하단
+            "이 상품으로 미션 시작")보다 작고 조용한 보조 버튼이며, 클릭해도
+            선택된 MARKET 상태는 그대로 유지된다(별도 초기화 없음). ---- */}
+        <button type="button" className="back-button" onClick={onBack}>
+          &#8592; BACK
+        </button>
+
         <span className="mission-badge">SELECT PRODUCT</span>
 
         <h1 className="mission-title">
@@ -3110,6 +3131,18 @@ function App() {
     setScreen('mission')
   }
 
+  // ---- 11단계: BACK 기능. 화면만 이전 단계로 되돌리고, 다른 어떤 상태도
+  // 초기화하지 않는다(selectedMarket/selectedProductId는 그대로 유지되어
+  // MARKET SELECT/PRODUCT SELECT 화면이 이미 선택된 상태를 그대로 보여준다).
+  // MISSION START 이후(턴 진행/점수 계산)에는 전혀 관여하지 않는다.
+  const handleBackToMarket = () => {
+    setScreen('select-market')
+  }
+
+  const handleBackToProduct = () => {
+    setScreen('select-product')
+  }
+
   const handleMissionStart = () => {
     console.log('MISSION START')
     const startingBudget = getMissionBriefing(product).budget
@@ -3189,7 +3222,14 @@ function App() {
   }
 
   if (screen === 'select-product') {
-    return <SelectProductScreen market={market} onNext={handleProductNext} />
+    return (
+      <SelectProductScreen
+        market={market}
+        selectedProductId={selectedProductId}
+        onNext={handleProductNext}
+        onBack={handleBackToMarket}
+      />
+    )
   }
 
   if (screen === 'mission') {
@@ -3200,6 +3240,7 @@ function App() {
         briefing={getMissionBriefing(product)}
         scores={scores}
         onMissionStart={handleMissionStart}
+        onBack={handleBackToProduct}
       />
     )
   }
