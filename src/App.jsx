@@ -2017,7 +2017,7 @@ function AnimatedStatCard({ label, value, format, progress, highlight = false })
         <div className="stat-card__progress" role="presentation">
           <div
             className="stat-card__progress-fill"
-            style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
+            style={{ width: `${clampValue(progress, 0, 100)}%` }}
           />
         </div>
       )}

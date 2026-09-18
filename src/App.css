@@ -1882,7 +1882,6 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  animation: start-fade-in 0.5s ease 0.36s both;
 }
 
 .start-game-button__arrow {
