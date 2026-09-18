@@ -231,6 +231,68 @@
   color: #059669;
 }
 
+/* ---- Phase 5: Buyer의 코멘트를 말풍선처럼 보이게 한다. 텍스트(comment)는
+   기존 getBuyerComment 결과 그대로이며, 모양만 dialogue-bubble로 바꾼다. ---- */
+.buyer-speech-bubble {
+  position: relative;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(52, 211, 153, 0.35);
+}
+
+.buyer-speech-bubble::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  left: 20px;
+  width: 12px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.7);
+  border-left: 1px solid rgba(52, 211, 153, 0.35);
+  border-top: 1px solid rgba(52, 211, 153, 0.35);
+  transform: rotate(45deg);
+}
+
+/* ---- Phase 5: POSITIVE/CONCERNS 한 줄(label — text)을 아이콘 배지 +
+   본문으로 나눠 reaction-card처럼 보이게 한다. label/text 문구 자체는
+   기존 getBuyerPositives/getBuyerConcerns 결과 그대로다. ---- */
+.ai-feedback-panel__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.ai-feedback-panel__item-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: 11px;
+  background: rgba(30, 41, 59, 0.08);
+}
+
+.ai-feedback-panel__item-text {
+  flex: 1;
+}
+
+.ai-feedback-panel__item-text strong {
+  color: #1E293B;
+}
+
+/* ---- Phase 5: BUYER'S NEXT MOVE의 action card 위 작은 섹션 라벨. ---- */
+.choice-list__label {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: #64748B;
+}
+
 .mission-title {
   margin: 0;
   display: flex;
@@ -250,6 +312,70 @@
   flex-shrink: 0;
   border-radius: 3px;
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+/* ---- Phase 5: Buyer Identity. BUYER RESPONSE/BUYER'S NEXT MOVE가 함께
+   쓰는 간단한 아바타/배지 영역. --market-accent*(Phase 4의 MARKET_ACCENT를
+   그대로 재사용)가 없으면 중립 톤으로 표시된다. 캐릭터 일러스트 없이
+   국기 + 텍스트만으로 "거래 상대방" 느낌을 준다. ---- */
+.buyer-identity {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: var(--market-accent-tint, rgba(37, 99, 235, 0.06));
+  border: 1px solid var(--market-accent-border, rgba(37, 99, 235, 0.2));
+  text-align: left;
+  animation: turn-fade-in 0.35s ease both;
+}
+
+.buyer-identity__avatar {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #FFFFFF;
+  border: 2px solid var(--market-accent, #2563EB);
+  box-shadow: 0 4px 10px -4px rgba(30, 41, 59, 0.35);
+}
+
+.buyer-identity__flag {
+  width: 26px;
+  height: 17px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+.buyer-identity__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.buyer-identity__name {
+  font-size: 15px;
+  font-weight: 800;
+  color: #1E293B;
+}
+
+.buyer-identity__role {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--market-accent, #2563EB);
+}
+
+.buyer-identity__intro {
+  margin-top: 2px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #64748B;
 }
 
 .mission-body {
@@ -942,6 +1068,37 @@
   font-size: clamp(16px, 4vw, 20px);
   font-weight: 700;
   color: #64748B;
+}
+
+/* ---- Phase 5: BUYER INTEREST 숫자를 tier(기존 getBuyerInterestMessage의
+   tier.level)에 따라 색으로도 구분한다. 값/등급 판정은 그대로이며 표현만
+   바뀐다. .interest-meter__fill--*와 같은 색 계열을 쓴다. ---- */
+.total-score--high .total-score__value {
+  background: linear-gradient(135deg, #16A34A 0%, #22c55e 50%, #15803d 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.total-score--moderate .total-score__value {
+  background: linear-gradient(135deg, #D97706 0%, #f59e0b 50%, #b45309 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.total-score--low .total-score__value {
+  background: linear-gradient(135deg, #ea580c 0%, #f97316 50%, #c2410c 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.total-score--verylow .total-score__value {
+  background: linear-gradient(135deg, #DC2626 0%, #ef4444 50%, #b91c1c 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .strategy-summary {
@@ -1830,6 +1987,33 @@
   border-color: rgba(248, 113, 113, 0.4);
   background: rgba(248, 113, 113, 0.1);
   box-shadow: 0 0 24px -10px rgba(248, 113, 113, 0.55);
+}
+
+/* ---- Phase 5: BUYER INTEREST tier(getBuyerInterestMessage의 tier.level,
+   기존 판정 그대로)를 BUYER RESPONSE/BUYER'S NEXT MOVE의 mission-badge에도
+   같은 색 체계로 입혀 "관심도가 높을수록 긍정적, 낮을수록 경고" 느낌을 준다. ---- */
+.mission-badge--high {
+  color: #16A34A;
+  border-color: rgba(74, 222, 128, 0.4);
+  background: rgba(74, 222, 128, 0.1);
+}
+
+.mission-badge--moderate {
+  color: #D97706;
+  border-color: rgba(251, 191, 36, 0.4);
+  background: rgba(251, 191, 36, 0.1);
+}
+
+.mission-badge--low {
+  color: #EA580C;
+  border-color: rgba(251, 146, 60, 0.4);
+  background: rgba(251, 146, 60, 0.1);
+}
+
+.mission-badge--verylow {
+  color: #DC2626;
+  border-color: rgba(248, 113, 113, 0.4);
+  background: rgba(248, 113, 113, 0.1);
 }
 
 .performance-card .mission-badge {

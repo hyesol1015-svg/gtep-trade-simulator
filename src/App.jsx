@@ -2233,11 +2233,73 @@ function getBuyerPositives(scores, selections) {
   return candidates.sort((a, b) => b.severity - a.severity).slice(0, 2)
 }
 
+// ---- Phase 5: BUYER RESPONSE와 BUYER'S NEXT MOVE가 공유하는 두 개의
+// 순수 표시용 컴포넌트. 둘 다 새 계산을 하지 않고, 호출부(BuyerResponseScreen/
+// BuyerNextMoveScreen)가 기존 calculateBuyerInterest/getBuyerInterestMessage
+// 결과에서 이미 뽑아낸 interestScore/tier.level/market/profile만 그대로
+// 받아 "표현"만 담당한다. 두 화면에서 같은 컴포넌트를 그대로 재사용함으로써
+// "같은 바이어가 두 화면에 이어서 등장한다"는 연결감을 준다.
+
+// Buyer Identity: 국기 + "{시장 한글명} 바이어" + 기존 MARKET_PROFILES의
+// buyerIntro(있는 그대로)를 보여주는 간단한 아바타/배지 영역. 새 국가 정보나
+// 캐릭터 설정은 만들지 않는다 — market/profile에 이미 있는 값만 사용한다.
+function BuyerIdentityCard({ market, profile, accent }) {
+  const style = accent
+    ? {
+        '--market-accent': accent.color,
+        '--market-accent-tint': accent.tint,
+        '--market-accent-border': accent.border,
+      }
+    : undefined
+  return (
+    <div className="buyer-identity" style={style}>
+      <span className="buyer-identity__avatar" aria-hidden="true">
+        <MarketFlagIcon code={market.id} className="buyer-identity__flag" />
+      </span>
+      <span className="buyer-identity__text">
+        <span className="buyer-identity__name">{market.nameKo} 바이어</span>
+        <span className="buyer-identity__role">{market.name} BUYER</span>
+        {profile?.buyerIntro && (
+          <span className="buyer-identity__intro">{profile.buyerIntro}</span>
+        )}
+      </span>
+    </div>
+  )
+}
+
+// Buyer Interest Meter: 이미 계산된 interestScore(0~100)/level을 그대로
+// 받아 게이지 너비로만 표시한다. 화면에 나타나는 순간 0에서 실제 값까지
+// 짧게 채워지는 연출(state는 표시용일 뿐, calculateBuyerInterest 등 판정
+// 로직에는 전혀 관여하지 않음)만 추가한다.
+function BuyerInterestMeter({ interestScore, level }) {
+  const [width, setWidth] = useState(0)
+
+  useEffect(() => {
+    setWidth(0)
+    const raf = requestAnimationFrame(() => setWidth(interestScore))
+    return () => cancelAnimationFrame(raf)
+  }, [interestScore])
+
+  return (
+    <div
+      className="interest-meter"
+      role="img"
+      aria-label={`BUYER INTEREST ${interestScore} / 100`}
+    >
+      <div
+        className={`interest-meter__fill interest-meter__fill--${level}`}
+        style={{ width: `${width}%` }}
+      />
+    </div>
+  )
+}
+
 // TURN 4 직후, FINAL RESULT 이전에 표시되는 새 화면. 기존 .buyer-screen/
 // .buyer-card(App.css에 이미 정의돼 있었지만 미사용이던 클래스)와
 // .total-score/.mission-badge/.reaction-panel/.stat-grid/.ai-feedback-panel/
 // .start-button을 그대로 재사용해 새 CSS 없이 기존 디자인과 통일한다.
 function BuyerResponseScreen({ market, product, scores, selections, onContinue }) {
+  const profile = MARKET_PROFILES[market.id]
   const interestScore = calculateBuyerInterest(scores, market, product, selections)
   const tier = getBuyerInterestMessage(interestScore, market)
   const comment = getBuyerComment(market, product, interestScore)
@@ -2255,13 +2317,13 @@ function BuyerResponseScreen({ market, product, scores, selections, onContinue }
         <h1 className="price-title">&#129309; BUYER RESPONSE</h1>
         <p className="price-lead">THE BUYER HAS REVIEWED YOUR OFFER</p>
 
-        <h2 className="mission-title">
-          <MarketFlagIcon code={market.id} className="mission-title__flag" />
-          {market.name}
-        </h2>
+        {/* ---- Phase 5: Buyer Identity. 기존 MARKET_OPTIONS/MARKET_PROFILES
+            값(market.name/nameKo, profile.buyerIntro)만 사용해 "이 시장의
+            실제 거래 상대방"이 등장한 느낌을 준다. 새 국가/캐릭터 정보 없음. ---- */}
+        <BuyerIdentityCard market={market} profile={profile} accent={MARKET_ACCENT[market.id]} />
         <p className="price-lead">{product.name}</p>
 
-        <div className="total-score">
+        <div className={`total-score total-score--${tier.level}`}>
           <span className="total-score__label">BUYER INTEREST</span>
           <span className="total-score__value">
             {interestScore}
@@ -2269,24 +2331,15 @@ function BuyerResponseScreen({ market, product, scores, selections, onContinue }
           </span>
         </div>
 
-        <span className="mission-badge">
+        <span className={`mission-badge mission-badge--${tier.level}`}>
           {tier.icon} {tier.label}
         </span>
 
-        {/* ---- 9-4단계: BUYER INTEREST 시각 미터 ----
-            새 판정 로직 없이 이미 계산된 interestScore(0~100)를 그대로
-            너비(%)로, tier.level(기존 getBuyerInterestMessage 결과)을 그대로
-            색상 클래스로만 매핑한다. */}
-        <div
-          className="interest-meter"
-          role="img"
-          aria-label={`BUYER INTEREST ${interestScore} / 100`}
-        >
-          <div
-            className={`interest-meter__fill interest-meter__fill--${tier.level}`}
-            style={{ width: `${interestScore}%` }}
-          />
-        </div>
+        {/* ---- 9-4단계(Phase 5에서 BuyerInterestMeter로 통합) ----
+            새 판정 로직 없이 이미 계산된 interestScore(0~100)/tier.level을
+            그대로 BuyerInterestMeter(표시 전용, mount 시 채워지는 연출만
+            추가)에 넘긴다. BUYER'S NEXT MOVE도 같은 컴포넌트를 쓴다. ---- */}
+        <BuyerInterestMeter interestScore={interestScore} level={tier.level} />
 
         <div className="reaction-panel">
           <p>{tier.text}</p>
@@ -2311,9 +2364,12 @@ function BuyerResponseScreen({ market, product, scores, selections, onContinue }
           </div>
         </div>
 
+        {/* ---- Phase 5: 배지 문구를 "BUYER'S REACTION"으로, 코멘트를 말풍선
+            모양으로 바꾼다. comment/positives/concerns의 실제 문구는 기존
+            getBuyerComment/getBuyerConcerns/getBuyerPositives 결과 그대로다. ---- */}
         <section className="ai-feedback-panel">
-          <span className="ai-feedback-panel__badge">BUYER COMMENT</span>
-          <p className="ai-feedback-panel__subtitle">{comment}</p>
+          <span className="ai-feedback-panel__badge">BUYER&apos;S REACTION</span>
+          <p className="ai-feedback-panel__subtitle buyer-speech-bubble">{comment}</p>
 
           <div className="buyer-feedback-columns">
           {positives.length > 0 && (
@@ -2321,7 +2377,12 @@ function BuyerResponseScreen({ market, product, scores, selections, onContinue }
               <span className="ai-feedback-panel__label">POSITIVE POINTS</span>
               <div className="result-panel__desc">
                 {positives.map((p) => (
-                  <p key={p.label}>&#10003; {p.label} — {p.text}</p>
+                  <p className="ai-feedback-panel__item" key={p.label}>
+                    <span className="ai-feedback-panel__item-icon" aria-hidden="true">&#10003;</span>
+                    <span className="ai-feedback-panel__item-text">
+                      <strong>{p.label}</strong> — {p.text}
+                    </span>
+                  </p>
                 ))}
               </div>
             </div>
@@ -2332,7 +2393,12 @@ function BuyerResponseScreen({ market, product, scores, selections, onContinue }
               <span className="ai-feedback-panel__label">CONCERNS</span>
               <div className="result-panel__desc">
                 {concerns.map((c) => (
-                  <p key={c.label}>&#9888; {c.label} — {c.text}</p>
+                  <p className="ai-feedback-panel__item" key={c.label}>
+                    <span className="ai-feedback-panel__item-icon" aria-hidden="true">&#9888;</span>
+                    <span className="ai-feedback-panel__item-text">
+                      <strong>{c.label}</strong> — {c.text}
+                    </span>
+                  </p>
                 ))}
               </div>
             </div>
@@ -2608,6 +2674,7 @@ function calculateExportPerformance(contractResult, buyerInterest, scores, produ
 // 기존 .buyer-screen/.buyer-card/.mission-badge/.reaction-panel/.choice-list/
 // .start-button을 그대로 재사용해 새 CSS 없이 기존 디자인과 통일한다.
 function BuyerNextMoveScreen({ market, product, scores, selections, onSelect }) {
+  const profile = MARKET_PROFILES[market.id]
   const interestScore = calculateBuyerInterest(scores, market, product, selections)
   const tier = getBuyerInterestMessage(interestScore, market)
   const options = BUYER_NEXT_MOVE_OPTIONS[tier.level]
@@ -2639,6 +2706,12 @@ function BuyerNextMoveScreen({ market, product, scores, selections, onSelect }) 
         <span className="price-step">BUYER&apos;S NEXT MOVE</span>
 
         <h1 className="price-title">BUYER&apos;S NEXT MOVE</h1>
+
+        {/* ---- Phase 5: BUYER RESPONSE와 같은 Buyer Identity를 다시 보여줘
+            "같은 바이어가 이어서 반응하고 있다"는 연결감을 준다. 새 정보
+            없이 market/profile 기존 값만 재사용. ---- */}
+        <BuyerIdentityCard market={market} profile={profile} accent={MARKET_ACCENT[market.id]} />
+
         {/* ---- 10단계: BUYER RESPONSE → BUYER'S NEXT MOVE 연결. 이 화면의
             선택지가 왜 이 3개인지(BUYER_NEXT_MOVE_OPTIONS[tier.level])를
             직전 화면에서 이미 계산된 interestScore/tier 그대로 다시 보여줘
@@ -2647,13 +2720,19 @@ function BuyerNextMoveScreen({ market, product, scores, selections, onSelect }) 
           BUYER INTEREST {interestScore} / 100 — HOW WILL YOU RESPOND?
         </p>
 
-        <span className="mission-badge">
+        <span className={`mission-badge mission-badge--${tier.level}`}>
           {tier.icon} {tier.label}
         </span>
+
+        {/* ---- Phase 5: BUYER RESPONSE와 동일한 게이지를 여기에도 보여줘
+            BUYER INTEREST → BUYER'S NEXT MOVE 흐름이 이어지게 한다. ---- */}
+        <BuyerInterestMeter interestScore={interestScore} level={tier.level} />
 
         <div className="reaction-panel">
           <p>{situation}</p>
         </div>
+
+        <span className="choice-list__label">AVAILABLE RESPONSES</span>
 
         <div className="choice-list">
           {options.map((option) => (
