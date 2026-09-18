@@ -277,6 +277,18 @@
   border: 1px solid rgba(30, 41, 59, 0.14);
 }
 
+/* ---- Phase 2: MISSION 화면(.mission-card)의 mission-info만 카드형 그리드로.
+   BUYER'S NEXT MOVE / FINAL RESULT 등 다른 화면이 재사용하는 .mission-info는
+   위 기본 스타일을 그대로 유지한다. ---- */
+.mission-card .mission-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  border: none;
+}
+
 /* ---- 9-2단계: MISSION OBJECTIVE 카드 ---- */
 .mission-objective {
   width: 100%;
@@ -366,6 +378,28 @@
   font-size: 15px;
   font-weight: 700;
   color: #1E293B;
+}
+
+.mission-card .mission-info__row {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(30, 41, 59, 0.05);
+  border: 1px solid rgba(30, 41, 59, 0.14);
+  text-align: left;
+}
+
+.mission-card .mission-info__row dt {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.mission-card .mission-info__row dd {
+  font-size: 15px;
+  font-weight: 800;
 }
 
 .price-step {
@@ -1041,10 +1075,16 @@
 
 .market-option__strategy {
   margin-top: 4px;
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
   color: #D97706;
+  background: rgba(217, 119, 6, 0.1);
+  border: 1px solid rgba(217, 119, 6, 0.28);
 }
 
 .result-panel__flag {
@@ -1708,7 +1748,8 @@
    logic, data or handlers are touched here -- layout/visual only. */
 .mission-card__layout,
 .decision-layout,
-.final-result-layout {
+.final-result-layout,
+.start-card__layout {
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -1720,7 +1761,9 @@
 .decision-layout__left,
 .decision-layout__right,
 .final-result-layout__left,
-.final-result-layout__right {
+.final-result-layout__right,
+.start-card__left,
+.start-card__right {
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -1738,7 +1781,33 @@
 
 @media (min-width: 1200px) {
   .start-card {
-    max-width: 640px;
+    max-width: 960px;
+  }
+
+  /* ---- Phase 2: START 화면 데스크톱 2컬럼 (브랜딩 좌 / 마켓·예산·CTA 우) ---- */
+  .start-card__layout {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 32px;
+  }
+
+  .start-card__left {
+    flex: 0 0 340px;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .start-card__right {
+    flex: 1 1 auto;
+    align-items: stretch;
+    text-align: left;
+    min-width: 0;
+  }
+
+  /* ---- Phase 2: MISSION 화면 좌/우 컬럼 사이 구분선 (MISSION 전용) ---- */
+  .mission-card__right {
+    border-left: 1px solid rgba(30, 41, 59, 0.1);
+    padding-left: 28px;
   }
 
   .market-card,
@@ -1821,5 +1890,107 @@
 
   .buyer-feedback-columns > .ai-feedback-panel__section {
     flex: 1 1 0;
+  }
+}
+
+/* ================================================================
+   Phase 2: CORE GAME SCREEN POLISH (START / MARKET SELECT /
+   PRODUCT SELECT / MISSION). 게임 로직/데이터/화면 전환/BACK 동작은
+   전혀 건드리지 않고, 시각적 계층과 카드 상태만 보강한다.
+   ================================================================ */
+
+/* ---- START: 은은한 배경 워터마크(지구본) ----
+   순수 장식용 ::before이며 pointer-events 없음, 애니메이션 없음
+   (성능에 영향 없는 정적 장식). */
+.start-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.start-card::before {
+  content: '\1F310';
+  position: absolute;
+  top: -36px;
+  right: -24px;
+  font-size: 200px;
+  line-height: 1;
+  opacity: 0.05;
+  transform: rotate(6deg);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.start-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- START GAME / MISSION START: 메인 CTA를 은은한 glow pulse로 강조.
+   두 버튼 모두 .start-game-button 클래스만 공유하며(다른 화면에는 쓰이지
+   않음), transform/layout이 아닌 box-shadow만 애니메이션해 가볍다. ---- */
+@keyframes cta-pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 14px 30px -10px rgba(37, 99, 235, 0.55);
+  }
+  50% {
+    box-shadow: 0 18px 38px -8px rgba(245, 158, 11, 0.55);
+  }
+}
+
+.start-game-button {
+  animation:
+    start-fade-in 0.5s ease 0.36s both,
+    cta-pulse-glow 2.6s ease-in-out 1s infinite;
+}
+
+/* ---- MARKET SELECT: 시장을 하나 고른 뒤 나머지 카드를 살짝 무채색
+   처리해 선택/비선택 대비를 강화 (판정 로직 변경 없음, 클래스만 추가). ---- */
+.market-option--muted {
+  opacity: 0.6;
+  filter: saturate(0.75);
+}
+
+.market-option--muted:hover {
+  opacity: 0.85;
+  filter: saturate(0.9);
+}
+
+/* ---- MARKET SELECT: 카드 hover를 조금 더 또렷하게(게임 타일 느낌) ---- */
+.market-option:hover {
+  transform: translateY(-3px);
+}
+
+/* ---- PRODUCT SELECT: 상품 카드 전용 톤(다른 화면의 .choice-card는
+   영향받지 않도록 .product-card로 스코프). 카드 크기는 이미 grid stretch로
+   통일되어 있으므로 여백/타이포/hover 강도만 보강한다. ---- */
+.product-card .choice-card {
+  padding: 18px 20px;
+  align-items: flex-start;
+}
+
+.product-card .choice-card__title {
+  font-size: 16px;
+}
+
+.product-card .choice-card__letter {
+  width: 38px;
+  height: 38px;
+  font-size: 16px;
+}
+
+.product-card .choice-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px -14px rgba(37, 99, 235, 0.6);
+}
+
+.product-card .choice-card--selected {
+  transform: translateY(-3px);
+}
+
+@media (min-width: 1200px) {
+  .product-card .choice-list {
+    gap: 18px;
+    align-items: stretch;
   }
 }

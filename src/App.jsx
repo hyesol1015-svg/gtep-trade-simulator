@@ -1092,6 +1092,8 @@ function StartScreen({ onStart }) {
       <div className="screen__grid" aria-hidden="true" />
 
       <main className="start-card">
+        <div className="start-card__layout">
+        <div className="start-card__left">
         <div className="brand">
           <span className="brand__eyebrow">GTEP</span>
           <h1 className="brand__title">
@@ -1121,6 +1123,8 @@ function StartScreen({ onStart }) {
             strategy into a successful export deal.
           </p>
         </section>
+        </div>
+        <div className="start-card__right">
 
         <section className="start-market-preview" aria-label={`${MARKET_OPTIONS.length} markets preview`}>
           <span className="start-market-preview__label">
@@ -1149,6 +1153,8 @@ function StartScreen({ onStart }) {
             &#8594;
           </span>
         </button>
+        </div>
+        </div>
 
         <p className="start-footer">
           GTEP TRADE SIMULATOR
@@ -1315,6 +1321,10 @@ function SelectMarketScreen({ selectedMarket, onSelect, onNext }) {
         <div className="market-grid">
           {MARKET_OPTIONS.map((market) => {
             const isSelected = selectedMarket === market.id
+            // ---- Phase 2: 선택된 시장이 있을 때 나머지 카드를 살짝 무채색
+            // 처리해 선택/비선택 대비를 강화한다. selectedMarket(기존 prop)
+            // 에서만 파생되며 새 상태나 판단 로직은 추가하지 않는다.
+            const isMuted = Boolean(selectedMarket) && !isSelected
             return (
               <button
                 type="button"
@@ -1322,7 +1332,9 @@ function SelectMarketScreen({ selectedMarket, onSelect, onNext }) {
                 className={
                   isSelected
                     ? 'market-option market-option--selected'
-                    : 'market-option'
+                    : isMuted
+                      ? 'market-option market-option--muted'
+                      : 'market-option'
                 }
                 onClick={() => handleSelect(market)}
                 aria-pressed={isSelected}
