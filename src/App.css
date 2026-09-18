@@ -808,6 +808,28 @@
   color: #1E293B;
 }
 
+.stat-card--highlight {
+  grid-column: span 2;
+  background: rgba(251, 191, 36, 0.08);
+  border-color: rgba(251, 191, 36, 0.32);
+}
+
+.stat-card__progress {
+  width: 100%;
+  height: 6px;
+  margin-top: 2px;
+  border-radius: 999px;
+  background: rgba(30, 41, 59, 0.12);
+  overflow: hidden;
+}
+
+.stat-card__progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  transition: width 0.5s ease;
+}
+
 .reaction-panel {
   width: 100%;
   display: flex;
@@ -1189,15 +1211,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
   color: #64748b;
   background: rgba(30, 41, 59, 0.06);
   border: 1px solid rgba(30, 41, 59, 0.16);
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .turn-track__step--done .turn-track__dot {
@@ -1235,8 +1257,8 @@
 }
 
 .mission-hud__turn-label {
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 800;
   letter-spacing: 0.14em;
   color: #2563EB;
 }
@@ -1253,7 +1275,8 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  padding: 16px 18px;
   border-radius: 14px;
   background: #FFFFFF;
   border: 1px solid rgba(37, 99, 235, 0.35);
@@ -1264,10 +1287,18 @@
 }
 
 .effect-toast__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
+  padding: 4px 10px;
+  border-radius: 999px;
   font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.24em;
+  letter-spacing: 0.18em;
   color: #D97706;
+  background: rgba(217, 119, 6, 0.1);
+  border: 1px solid rgba(217, 119, 6, 0.28);
 }
 
 .effect-toast__summary {
@@ -1551,17 +1582,26 @@
 /* ---- 6. BUYER RESPONSE: 관심도 시각 미터 + 단계적 진입 연출 ---- */
 .interest-meter {
   width: 100%;
-  height: 10px;
+  height: 14px;
   border-radius: 999px;
-  background: rgba(30, 41, 59, 0.12);
+  background: rgba(30, 41, 59, 0.1);
+  border: 1px solid rgba(30, 41, 59, 0.12);
   overflow: hidden;
   animation: turn-fade-in 0.35s ease 0.25s both;
 }
 
 .interest-meter__fill {
+  position: relative;
   height: 100%;
   border-radius: 999px;
-  transition: width 0.5s ease;
+  transition: width 0.6s ease;
+}
+
+.interest-meter__fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.35), transparent 60%);
 }
 
 .interest-meter__fill--high {
@@ -1596,6 +1636,16 @@
   animation: turn-fade-in 0.35s ease 0.45s both;
 }
 
+/* Phase 3: .stat-grid가 MissionHUD와 .mission-hud__grid 클래스를 공유하다
+   보니, 데스크톱 미디어쿼리의 flex-basis(420px, 가로 flex 기준)가 세로
+   flex 컨테이너인 .buyer-response-card 안에서는 높이값으로 적용되어 카드가
+   불필요하게 늘어나는 문제가 있었다. 이 화면에서만 원래 그리드 크기로
+   되돌린다 — MissionHUD(TURN 화면)의 레이아웃/로직은 그대로 둔다. */
+.buyer-response-card .stat-grid {
+  flex: none;
+  width: 100%;
+}
+
 /* ---- 7. BUYER'S NEXT MOVE: 카드형 액션 선택지 ---- */
 .buyer-move-card {
   display: flex;
@@ -1621,8 +1671,26 @@
     box-shadow 0.15s ease;
 }
 
+.buyer-move-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  font-size: 16px;
+  background: rgba(37, 99, 235, 0.1);
+  border: 1px solid rgba(37, 99, 235, 0.18);
+}
+
+.buyer-move-card__label {
+  flex: 1;
+}
+
 .buyer-move-card__arrow {
   display: inline-block;
+  flex-shrink: 0;
   color: #2563EB;
   transition: transform 0.15s ease;
 }
@@ -1986,6 +2054,18 @@
 
 .product-card .choice-card--selected {
   transform: translateY(-3px);
+}
+
+/* ---- Phase 3: TURN 화면 전략 카드 선택 상태 강조(.decision-card로 스코프,
+   PRODUCT SELECT의 .choice-card--selected 톤은 건드리지 않는다) ---- */
+.decision-card .choice-card--selected {
+  border-width: 2px;
+}
+
+.decision-card .choice-card--selected .choice-card__letter {
+  box-shadow:
+    0 0 0 3px rgba(37, 99, 235, 0.22),
+    0 4px 10px -2px rgba(0, 0, 0, 0.45);
 }
 
 @media (min-width: 1200px) {

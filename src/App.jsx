@@ -1554,7 +1554,7 @@ function TurnProgressTrack({ turn, totalTurns }) {
 // 없음), pulse와 같은 700ms 창 안에서만 보이다가 함께 사라지게 해 HUD가
 // 계속 화살표로 뒤덮이지 않도록 한다(값 변화가 없으면 아무 표시도 하지
 // 않음 — "muted"에 해당).
-function AnimatedStatCard({ label, value, format }) {
+function AnimatedStatCard({ label, value, format, progress, highlight = false }) {
   const prevValueRef = useRef(value)
   const [pulse, setPulse] = useState(false)
   const [direction, setDirection] = useState(null)
@@ -1574,8 +1574,19 @@ function AnimatedStatCard({ label, value, format }) {
     return undefined
   }, [value])
 
+  const cardClassName = [
+    'stat-card',
+    highlight && 'stat-card--highlight',
+    pulse && 'stat-card--pulse',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
+  // ---- Phase 3: CURRENT SCORE ↔ TARGET SCORE 관계를 한눈에 보여주는 진행률
+  // 바. progress는 이미 계산되어 있는 currentScore/targetScore 비율(0~100)만
+  // 표시용으로 받아 너비(%)로 매핑할 뿐, 새로운 점수/판정을 계산하지 않는다.
   return (
-    <div className={pulse ? 'stat-card stat-card--pulse' : 'stat-card'}>
+    <div className={cardClassName}>
       <span className="stat-card__label">{label}</span>
       <span className="stat-card__value">
         {format ? format(value) : value}
@@ -1592,6 +1603,14 @@ function AnimatedStatCard({ label, value, format }) {
           </span>
         )}
       </span>
+      {typeof progress === 'number' && (
+        <div className="stat-card__progress" role="presentation">
+          <div
+            className="stat-card__progress-fill"
+            style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
+          />
+        </div>
+      )}
     </div>
   )
 }
@@ -1650,6 +1669,8 @@ function MissionHUD({
           label={'\u{1F3C6} SCORE'}
           value={currentScore}
           format={(v) => `${v} / ${targetScore}`}
+          progress={targetScore > 0 ? (currentScore / targetScore) * 100 : 0}
+          highlight
         />
       </div>
       <div className="mission-hud__turn">
@@ -1691,7 +1712,7 @@ function StrategyEffectToast({ option, effects, budgetDelta, market }) {
       {/* ---- 10단계: PLAYER CHOICE → STAT CHANGE 인과관계가 더 뚜렷하게
           읽히도록 배지 문구만 "STRATEGY SELECTED"로 바꾼다. 아래 표시되는
           값(요약 문구/effects 델타/budgetDelta)은 전부 기존 그대로다. ---- */}
-      <span className="effect-toast__badge">STRATEGY SELECTED</span>
+      <span className="effect-toast__badge">&#9889; STRATEGY SELECTED</span>
       <p className="effect-toast__summary">{getTurnSummary(option, effects, market)}</p>
       {rows.map((row) => (
         <div className="effect-toast__row" key={row.key}>
@@ -2231,6 +2252,23 @@ const BUYER_NEXT_MOVE_SITUATION = {
   verylow: 'The buyer is not convinced by the current offer.',
 }
 
+// ---- Phase 3: BUYER'S NEXT MOVE 카드를 일반 정보 카드가 아니라 게임의
+// action card처럼 보이게 하기 위한 순수 표시용 아이콘 매핑. option.id는
+// BUYER_NEXT_MOVE_OPTIONS(기존 데이터, 수정하지 않음)의 값을 그대로 key로만
+// 사용하며, 새 판정/효과를 추가하지 않는다.
+const BUYER_MOVE_ICONS = {
+  accept_offer: '\u2705',
+  request_sample: '\u{1F4E6}',
+  negotiate_moq: '\u{1F91D}',
+  negotiate_price: '\u{1F4AC}',
+  improve_localization: '\u{1F310}',
+  revise_offer: '\u{1F4DD}',
+  lower_moq: '\u{1F4C9}',
+  lower_price: '\u{1F4B0}',
+  final_offer: '\u23F3',
+  walk_away: '\u{1F6AA}',
+}
+
 const BUYER_NEXT_MOVE_OPTIONS = {
   high: [
     { id: 'accept_offer', label: 'ACCEPT OFFER' },
@@ -2517,6 +2555,9 @@ function BuyerNextMoveScreen({ market, product, scores, selections, onSelect }) 
               onClick={() => handleChoose(option)}
               disabled={pendingId !== null && pendingId !== option.id}
             >
+              <span className="buyer-move-card__icon" aria-hidden="true">
+                {BUYER_MOVE_ICONS[option.id] ?? '\u{1F3AF}'}
+              </span>
               <span className="buyer-move-card__label">{option.label}</span>
               <span className="buyer-move-card__arrow" aria-hidden="true">
                 &#8594;
