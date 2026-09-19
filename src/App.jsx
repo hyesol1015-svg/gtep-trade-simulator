@@ -1,6 +1,33 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
 
+// ================================================================
+// GLOBAL DESIGN UPGRADE: 이미지 에셋 연결.
+// 순수 정적 import이며, 어떤 게임 로직/데이터/점수 계산에도 관여하지 않는다.
+// 아직 어떤 화면의 JSX도 이 이미지들을 실제로 렌더링하지 않는다 — 이번
+// 단계는 "연결(import + 조회 구조)"까지만 진행하고, 화면에 적용하는 것은
+// 이후 별도 단계에서 진행한다.
+// ================================================================
+import worldMapImage from './assets/world-map.png'
+// ---- GAME UI REDESIGN v2 (에셋 재구성): buyer-*.png가 src/assets/buyers/로
+// 이동되어 경로만 갱신한다(파일 자체는 이전과 동일, 실제 존재 확인 후 수정).
+import buyerJapanImage from './assets/buyers/buyer-japan.png'
+import buyerSingaporeImage from './assets/buyers/buyer-singapore.png'
+import buyerUzbekistanImage from './assets/buyers/buyer-uzbekistan.png'
+import buyerChinaImage from './assets/buyers/buyer-china.png'
+import buyerUsaImage from './assets/buyers/buyer-usa.png'
+import buyerUkImage from './assets/buyers/buyer-uk.png'
+// ---- GAME UI REDESIGN v2: 국가별 실제 배경 이미지(src/assets/backgrounds/,
+// 실제 파일명 확인 후 사용) + START 화면 전용 배경. 게임 로직/데이터와는
+// 무관한 순수 시각 에셋이다.
+import startBgImage from './assets/backgrounds/start-bg2.png'
+import japanBgImage from './assets/backgrounds/japan-bg.png'
+import singaporeBgImage from './assets/backgrounds/singapore-bg.png'
+import uzbekistanBgImage from './assets/backgrounds/uzbekistan-bg2.png'
+import chinaBgImage from './assets/backgrounds/china-bg2.png'
+import usaBgImage from './assets/backgrounds/usa-bg2.png'
+import ukBgImage from './assets/backgrounds/uk-bg2.png'
+
 const SCORE_LABELS = {
   profit: '수익성',
   adEfficiency: '광고효율',
@@ -94,6 +121,49 @@ function calculateFinalScore(scores, budget, initialBudget) {
   const budgetBonus = clampValue(Math.round((budgetRatio - 1) * 20), -5, 5)
   const trustBonus = clampValue(Math.round((scores.trust - 50) / 10), -5, 5)
   return clampValue(baseTotal + budgetBonus + trustBonus, 0, 100)
+}
+
+// ---- Request: 모든 국가 공통 점수 등급 시스템. calculateFinalScore()가
+// 만든 totalScore(0~100)를 입력받아 등급 문자 + 결과 제목 + 결과 설명을
+// "번역"해서 반환하는 순수 표시용 함수다. 점수 계산 자체(calculateFinalScore/
+// computeTotalScore/calculateContractOutcome 등)는 전혀 건드리지 않으며,
+// 국가별로 이 로직을 반복하지 않고 모든 국가(FinalResultScreen)가 이
+// 하나의 함수를 그대로 재사용한다. TARGET SCORE(70점) 이상이라고 무조건
+// "성공"으로 취급하지 않고, totalScore 구간 자체로 A/B/C/D/F를 정한다.
+function getGrade(score) {
+  if (score >= 90) {
+    return {
+      grade: 'A',
+      title: '계약 성공',
+      description: '바이어와의 협상에 성공했습니다. 목표 판매량과 협상 점수를 높은 수준으로 달성했습니다.',
+    }
+  }
+  if (score >= 80) {
+    return {
+      grade: 'B',
+      title: '추가 협상 필요',
+      description: '계약 가능성이 있습니다. 일부 조건에 대한 추가 협상이 필요합니다.',
+    }
+  }
+  if (score >= 70) {
+    return {
+      grade: 'C',
+      title: '협상 고려',
+      description: '기본적인 협상 성과를 달성했습니다. 계약을 위해 추가적인 조건 검토가 필요합니다.',
+    }
+  }
+  if (score >= 60) {
+    return {
+      grade: 'D',
+      title: '협상 재검토',
+      description: '현재 조건으로는 계약 성사가 어렵습니다. 협상 전략을 다시 검토해야 합니다.',
+    }
+  }
+  return {
+    grade: 'F',
+    title: '계약 실패',
+    description: '바이어와의 계약에 실패했습니다. 협상 전략과 의사결정을 다시 검토해 보세요.',
+  }
 }
 
 // Multiplies each score field by the market's per-field weight (see
@@ -409,7 +479,7 @@ const BUYER_TYPES = [
   {
     id: 'price-01',
     concept: 'price',
-    name: 'Daniel Cho',
+    name: 'Grace Lim',
     secondaryConcern: 'COST EFFICIENCY',
     negotiationStyle: 'AGGRESSIVE',
     description: '가격 경쟁력을 가장 중요하게 생각하는 바이어입니다.',
@@ -433,7 +503,7 @@ const BUYER_TYPES = [
   {
     id: 'brand-01',
     concept: 'brand',
-    name: 'Aiko Tanaka',
+    name: 'Yuki Tanaka',
     secondaryConcern: 'PRODUCT DIFFERENTIATION',
     negotiationStyle: 'ANALYTICAL',
     description: '제품의 품질과 차별성을 꼼꼼히 검토하는 바이어입니다.',
@@ -441,7 +511,7 @@ const BUYER_TYPES = [
   {
     id: 'brand-02',
     concept: 'brand',
-    name: 'Elena Novak',
+    name: 'Ethan Miller',
     secondaryConcern: 'POSITIONING',
     negotiationStyle: 'SELECTIVE',
     description: '브랜드 이미지와 시장 포지셔닝을 중요하게 생각하는 바이어입니다.',
@@ -449,7 +519,7 @@ const BUYER_TYPES = [
   {
     id: 'brand-03',
     concept: 'brand',
-    name: 'Liam Foster',
+    name: 'Oliver Bennett',
     secondaryConcern: 'CONSUMER RESPONSE',
     negotiationStyle: 'CURIOUS',
     description: '소비자 반응과 제품 차별화 포인트에 관심이 많은 바이어입니다.',
@@ -457,7 +527,7 @@ const BUYER_TYPES = [
   {
     id: 'relationship-01',
     concept: 'relationship',
-    name: 'Karim Yusupov',
+    name: 'Dilshod Karimov',
     secondaryConcern: 'TRUST',
     negotiationStyle: 'PATIENT',
     description: '장기적인 거래 관계를 중요하게 생각하는 바이어입니다.',
@@ -465,7 +535,7 @@ const BUYER_TYPES = [
   {
     id: 'relationship-02',
     concept: 'relationship',
-    name: 'Grace Mwangi',
+    name: 'Wei Zhang',
     secondaryConcern: 'RELIABILITY',
     negotiationStyle: 'CAUTIOUS',
     description: '안정적인 공급과 신뢰할 수 있는 파트너십을 중요하게 생각하는 바이어입니다.',
@@ -480,38 +550,29 @@ const BUYER_TYPES = [
   },
 ]
 
-// 시장(MARKET_OPTIONS의 기존 id)마다 어떤 BUYER CONCEPT가 조금 더 자주
-// 등장하는지에 대한 가중치. MARKET_PROFILES.emphasisLabel/strategy의 톤을
-// 참고해 만든 값이며, 시장 데이터 자체는 전혀 바꾸지 않는다. 지나치게
-// 복잡한 확률 시스템을 피하기 위해 concept 3개에 대한 단순 가중치 하나뿐
-// 이며, 그 안에서 buyer 개인은 균등 확률로 뽑는다.
-const MARKET_BUYER_CONCEPT_WEIGHTS = {
-  JP: { price: 2, brand: 5, relationship: 3 },
-  SG: { price: 5, brand: 2, relationship: 3 },
-  UZ: { price: 5, brand: 1, relationship: 4 },
-  CN: { price: 3, brand: 3, relationship: 4 },
-  US: { price: 2, brand: 5, relationship: 3 },
-  GB: { price: 2, brand: 5, relationship: 3 },
+// ---- Request: 국가마다 항상 같은 이름의 바이어가 나오도록 고정한다.
+// (이전에는 이 자리에 MARKET별 BUYER CONCEPT 가중치 + Math.random 추첨이
+// 있었으나, 더 이상 쓰이지 않아 제거했다 -- 실제 판정에 쓰이는
+// calculateBuyerInterest/getBuyerTypeModifier 등은 buyerType 값 자체를
+// 그대로 입력받을 뿐이라 전혀 영향받지 않는다.)
+// 기존의 concept 가중치 랜덤 추첨(MARKET_BUYER_CONCEPT_WEIGHTS/Math.random)
+// 대신 국가 id -> BUYER_TYPES.id 1:1 매핑을 그대로 조회만 한다. 반환되는
+// 값의 형태(BUYER_TYPES 항목 그대로)는 이전과 동일하므로
+// calculateBuyerInterest/getBuyerTypeModifier 등 점수 계산 로직은 전혀
+// 건드리지 않는다. ----
+const MARKET_FIXED_BUYER_ID = {
+  JP: 'brand-01',
+  SG: 'price-01',
+  UZ: 'relationship-01',
+  CN: 'relationship-02',
+  US: 'brand-02',
+  GB: 'brand-03',
 }
 
-// 시장이 확정되는 시점(App()의 handleMarketNext)에 한 번만 호출되는 단순
-// 가중 추첨. Math.random을 이 한 곳에서만 사용하며, product/전략 선택과는
-// 무관하다 — 시장을 다시 고르지 않는 한 게임 내내 같은 buyer가 유지된다.
 function pickBuyerForMarket(marketId) {
-  const weights = MARKET_BUYER_CONCEPT_WEIGHTS[marketId] ?? { price: 1, brand: 1, relationship: 1 }
-  const concepts = Object.keys(weights)
-  const total = concepts.reduce((sum, key) => sum + weights[key], 0)
-  let roll = Math.random() * total
-  let chosenConcept = concepts[concepts.length - 1]
-  for (const key of concepts) {
-    if (roll < weights[key]) {
-      chosenConcept = key
-      break
-    }
-    roll -= weights[key]
-  }
-  const pool = BUYER_TYPES.filter((buyerType) => buyerType.concept === chosenConcept)
-  return pool[Math.floor(Math.random() * pool.length)] ?? BUYER_TYPES[0]
+  const fixedId = MARKET_FIXED_BUYER_ID[marketId]
+  const fixedBuyer = fixedId ? BUYER_TYPES.find((buyerType) => buyerType.id === fixedId) : null
+  return fixedBuyer ?? BUYER_TYPES[0]
 }
 
 // buyer의 concept(strategyAffinity)를 이미 이루어진 선택(selections, 기존
@@ -676,6 +737,60 @@ const MARKET_ACCENT = {
   GB: { color: '#16A34A', tint: 'rgba(22, 163, 74, 0.1)', border: 'rgba(22, 163, 74, 0.28)' },
 }
 
+// ================================================================
+// GLOBAL DESIGN UPGRADE: 이미지 에셋 조회 구조.
+// MARKET_ACCENT와 동일한 성격의 순수 표시용(display-only) 맵이다.
+// MARKET_OPTIONS/MARKET_PROFILES/PRODUCT_CATALOG/BUYER_TYPES 등 실제 게임
+// 데이터나 점수 계산 로직에는 전혀 연결되지 않으며, 이후 각 화면에서
+// "이 시장의 바이어 이미지/세계지도 이미지가 필요할 때" 그대로 조회해
+// 쓸 수 있도록 미리 만들어두는 참조 테이블일 뿐이다. 이번 단계에서는 아직
+// 어떤 화면도 이 값을 렌더링하지 않는다.
+// ================================================================
+const WORLD_MAP_IMAGE = worldMapImage
+
+const MARKET_BUYER_IMAGES = {
+  JP: buyerJapanImage,
+  SG: buyerSingaporeImage,
+  UZ: buyerUzbekistanImage,
+  CN: buyerChinaImage,
+  US: buyerUsaImage,
+  GB: buyerUkImage,
+}
+
+// ---- GAME UI REDESIGN v2: START 화면 전용 배경 + 국가별 배경(market.id로만
+// 조회, 위 MARKET_BUYER_IMAGES와 동일한 규칙). MARKET SELECT 이후의 화면
+// (MISSION/PRODUCT SELECT/TURN/BUYER RESPONSE/BUYER'S NEXT MOVE/CONTRACT
+// OUTCOME/FINAL RESULT)에서 선택된 국가의 실제 배경 이미지를 시네마틱
+// 배경으로 사용하기 위한 순수 조회 테이블이다. ----
+const START_BG_IMAGE = startBgImage
+const MARKET_BACKGROUND_IMAGES = {
+  JP: japanBgImage,
+  SG: singaporeBgImage,
+  UZ: uzbekistanBgImage,
+  CN: chinaBgImage,
+  US: usaBgImage,
+  GB: ukBgImage,
+}
+
+// market이 없거나(방어적) MARKET_BACKGROUND_IMAGES에 없는 시장이면(발생하지
+// 않음) undefined를 반환해 배경 없이 안전하게 폴백된다. 게임 상태나 판정
+// 로직에는 전혀 관여하지 않는 순수 표시용 헬퍼다.
+function getCountryHeroStyle(market) {
+  const image = market ? MARKET_BACKGROUND_IMAGES[market.id] : null
+  return image ? { '--game-hero-image': `url(${image})` } : undefined
+}
+
+// ---- GAME UI REDESIGN: MARKET_PROFILES.scoreWeights(실제 게임 계산에
+// 쓰이는 값, 대략 0.85~1.2 범위)를 0~100% 막대 너비로만 정규화하는 순수
+// 표시용 함수. 원본 가중치 값/계산 로직(applyScoreWeights 등)은 전혀
+// 건드리지 않으며, MARKET SELECT의 막대 그래프 너비를 정하는 데에만
+// 쓰인다. 존재하지 않는 수치를 새로 만들지 않는다.
+function getWeightPercent(weight) {
+  const MIN_WEIGHT = 0.85
+  const MAX_WEIGHT = 1.2
+  return clampValue(Math.round(((weight - MIN_WEIGHT) / (MAX_WEIGHT - MIN_WEIGHT)) * 100), 0, 100)
+}
+
 // market.strategy(예: "REVIEW / BRANDING")를 개별 칩으로 나눠 보여주기 위한
 // 순수 문자열 분리 헬퍼. 새 문구를 만들지 않고 기존 값만 나눈다.
 function getStrategyTags(strategy) {
@@ -719,6 +834,19 @@ const PRODUCT_CATEGORY_ICONS = {
   식품: '🍜',
   생활용품: '🏠',
 }
+
+// ---- GAME UI REDESIGN: PRODUCT SELECT 카드 전용 순수 표시용 accent 색
+// 팔레트(MARKET_ACCENT와 동일한 성격 — 표시 전용, PRODUCT_CATALOG 값과는
+// 무관). 카드 순서(index)에 따라 순환 적용될 뿐 판정에는 관여하지 않는다.
+const PRODUCT_ACCENT_PALETTE = [
+  { color: '#DB2777', tint: 'rgba(219, 39, 119, 0.1)', border: 'rgba(219, 39, 119, 0.28)' },
+  { color: '#16A34A', tint: 'rgba(22, 163, 74, 0.1)', border: 'rgba(22, 163, 74, 0.28)' },
+  { color: '#2563EB', tint: 'rgba(37, 99, 235, 0.1)', border: 'rgba(37, 99, 235, 0.28)' },
+]
+
+// ---- GAME UI REDESIGN: CONTRACT OUTCOME(성공) 콘페티 조각 개수만 정하는
+// 순수 표시용 배열. 게임 데이터/판정과는 무관하다.
+const CONFETTI_PIECE_INDEXES = Array.from({ length: 18 }, (_, i) => i)
 
 // Product data, kept separate from the screen components so new products can
 // be added later just by extending this object (3 entries per market id).
@@ -1357,12 +1485,19 @@ function ChoiceCard({ option, selected, onSelect, muted = false }) {
     <button
       type="button"
       className={className}
+      style={option.cardStyle}
       onClick={() => onSelect(option)}
       aria-pressed={selected}
     >
-      <span className="choice-card__letter">{option.id}</span>
+      <span className="choice-card__letter">{option.iconContent ?? option.id}</span>
       <span className="choice-card__text">
         <span className="choice-card__title">{option.title}</span>
+        {/* ---- GLOBAL DESIGN UPGRADE: PRODUCT SELECT 전용 EXPORT VALUE
+            배지. option.valueBadge가 있을 때만 그려지는 opt-in 필드라
+            STRATEGY_ROUNDS 등 다른 ChoiceCard 호출부에는 영향이 없다. ---- */}
+        {option.valueBadge && (
+          <span className="choice-card__value-badge">{option.valueBadge}</span>
+        )}
         {option.subtitle && (
           <span className="choice-card__subtitle">{option.subtitle}</span>
         )}
@@ -1372,6 +1507,9 @@ function ChoiceCard({ option, selected, onSelect, muted = false }) {
             재사용한다. tags가 없는 기존 호출부(전략 카드 등)는 영향 없음. ---- */}
         {option.tags && option.tags.length > 0 && (
           <span className="choice-card__tags">
+            {option.tagsLabel && (
+              <span className="choice-card__tags-label">{option.tagsLabel}</span>
+            )}
             {option.tags.map((item) => (
               <span
                 key={item.key}
@@ -1417,8 +1555,65 @@ function ChoiceCard({ option, selected, onSelect, muted = false }) {
             })}
           </ul>
         )}
+        {option.selectHint && (
+          <span className="choice-card__select-hint">{option.selectHint} &#8594;</span>
+        )}
       </span>
     </button>
+  )
+}
+
+// ================================================================
+// GLOBAL DESIGN UPGRADE: GLOBAL TRADE COMMAND CENTER 상단 헤더.
+// 순수 표시용 컴포넌트이며 새 게임 값을 계산하지 않는다. CAPITAL은 이미
+// 존재하는 budget(예산) state, REPUTATION은 이미 존재하는 scores.trust
+// (바이어 신뢰도) 값을 그대로 재사용해 라벨만 새로 붙인 것이고, MARKET도
+// 이미 선택된 market 객체(market.name)를 그대로 보여줄 뿐이다. 어떤
+// 점수/판정 로직도 추가하지 않는다.
+// ================================================================
+function GlobalTradeHeader({ market, budget, reputation, turn, totalTurns }) {
+  return (
+    <header className="gts-header">
+      <div className="gts-header__brand">
+        <span className="gts-header__title">GLOBAL TRADE SIMULATOR</span>
+        <span className="gts-header__season">SEASON 01 &middot; GLOBAL EXPANSION</span>
+      </div>
+      <div className="gts-header__hud">
+        <div className="gts-header__stat">
+          <span className="gts-header__stat-label">CAPITAL</span>
+          <span className="gts-header__stat-value">&#8361;{budget.toLocaleString()}</span>
+        </div>
+        <div className="gts-header__stat">
+          <span className="gts-header__stat-label">REPUTATION</span>
+          <span className="gts-header__stat-value">{reputation} / 100</span>
+        </div>
+        <div className="gts-header__stat">
+          <span className="gts-header__stat-label">MARKET</span>
+          <span className="gts-header__stat-value">
+            {market ? (
+              <>
+                <MarketFlagIcon code={market.id} className="gts-header__stat-flag" />
+                {market.name}
+              </>
+            ) : (
+              'SELECTING\u2026'
+            )}
+          </span>
+        </div>
+        {/* ---- REFERENCE LAYOUT PASS: NEGOTIATION 화면의 레퍼런스는 헤더에
+            TURN을 함께 보여준다. turn/totalTurns를 넘기는 화면(현재는
+            MissionDecisionScreen뿐)에서만 조건부로 나타나고, 값 자체는
+            그 화면이 이미 갖고 있던 roundIndex/totalRounds 그대로다. ---- */}
+        {turn && totalTurns && (
+          <div className="gts-header__stat">
+            <span className="gts-header__stat-label">TURN</span>
+            <span className="gts-header__stat-value">
+              {turn} / {totalTurns}
+            </span>
+          </div>
+        )}
+      </div>
+    </header>
   )
 }
 
@@ -1431,83 +1626,57 @@ function ChoiceCard({ option, selected, onSelect, muted = false }) {
 // 것과 동일한 MARKET_OPTIONS(및 그 안의 MarketFlagIcon)를 그대로 map()해서
 // 보여준다 — MARKET_PROFILES/MARKET_OPTIONS에 국가가 추가/삭제되면 START
 // 화면의 미리보기도 코드 수정 없이 자동으로 함께 바뀐다.
-function StartScreen({ onStart }) {
+// ---- GAME UI REDESIGN: 장식용 상단 바(design-reference.png의 01 START
+// nav 구조 참고). 이 앱은 상태 기반 단일 화면 게임이라 실제로 이동
+// 가능한 메뉴가 없으므로, 클릭 가능한 네비게이션이 아니라 게임의 진행
+// 단계를 보여주는 순수 장식 chip으로만 구현한다. ----
+function StartScreenTopBar() {
   return (
-    <div className="start-screen">
+    <div className="start-topbar">
+      <div className="start-topbar__brand">
+        <span className="start-topbar__logo" aria-hidden="true">&#127760;</span>
+        <span className="start-topbar__wordmark">GLOBAL TRADE SIMULATOR</span>
+      </div>
+      <div className="start-topbar__stages" aria-hidden="true">
+        <span className="start-topbar__stage">MARKET</span>
+        <span className="start-topbar__stage">PRODUCT</span>
+        <span className="start-topbar__stage">TRADE</span>
+        <span className="start-topbar__stage">RESULT</span>
+      </div>
+    </div>
+  )
+}
+
+function StartScreen({ onStart }) {
+  // ---- START screen: pure title/intro screen. No character, no
+  // speech bubbles, no big card. Background fills the viewport and the
+  // title/tagline/button sit directly on top of it. ----
+  const heroStyle = { '--start-hero-image': `url(${START_BG_IMAGE})` }
+  return (
+    <div className="start-screen start-screen--hero" style={heroStyle}>
+      <StartScreenTopBar />
       <div className="screen__glow" aria-hidden="true" />
       <div className="screen__grid" aria-hidden="true" />
 
-      <main className="start-card">
-        <div className="start-card__layout">
-        <div className="start-card__left">
-        <div className="brand">
-          <span className="brand__eyebrow">GTEP</span>
-          <h1 className="brand__title">
-            TRADE
+      <div className="start-scene">
+        <span className="start-scene__season">SEASON 01 &middot; GLOBAL EXPANSION</span>
+
+        <div className="start-scene__titleblock">
+          <h1 className="start-scene__heading">
+            GLOBAL TRADE
             <br />
             SIMULATOR
           </h1>
-          <p className="start-hero__subtitle">
-            REAL-WORLD EXPORT
-            <br />
-            DECISION GAME
-          </p>
+          <p className="start-scene__modes">EXPLORE &middot; NEGOTIATE &middot; EXPAND</p>
+
+          <button type="button" className="start-button start-game-button start-scene__cta" onClick={onStart}>
+            <span>START SIMULATION</span>
+            <span className="start-game-button__arrow" aria-hidden="true">
+              &#8594;
+            </span>
+          </button>
         </div>
-
-        <p className="description">
-          &quot;Choose your market.
-          <br />
-          Build your strategy.
-          <br />
-          Close the deal.&quot;
-        </p>
-
-        <section className="start-mission-card">
-          <span className="start-mission-card__badge">&#127919; YOUR MISSION</span>
-          <p className="start-mission-card__text">
-            Enter a global market, make smart trade decisions, and turn your
-            strategy into a successful export deal.
-          </p>
-        </section>
-        </div>
-        <div className="start-card__right">
-
-        <section className="start-market-preview" aria-label={`${MARKET_OPTIONS.length} markets preview`}>
-          <span className="start-market-preview__label">
-            &#127758; {MARKET_OPTIONS.length} MARKETS
-          </span>
-          <div className="start-market-preview__grid">
-            {MARKET_OPTIONS.map((market) => (
-              <span key={market.id} className="start-market-preview__item">
-                <MarketFlagIcon code={market.id} className="start-market-preview__flag" />
-                {market.name}
-              </span>
-            ))}
-          </div>
-        </section>
-
-        <div className="start-budget">
-          <span className="start-budget__label">&#128176; STARTING BUDGET</span>
-          <span className="start-budget__value">
-            &#8361;{initialGameState.budget.toLocaleString()}
-          </span>
-        </div>
-
-        <button type="button" className="start-button start-game-button" onClick={onStart}>
-          <span>START GAME</span>
-          <span className="start-game-button__arrow" aria-hidden="true">
-            &#8594;
-          </span>
-        </button>
-        </div>
-        </div>
-
-        <p className="start-footer">
-          GTEP TRADE SIMULATOR
-          <br />
-          EXPORT &bull; STRATEGY &bull; NEGOTIATION
-        </p>
-      </main>
+      </div>
     </div>
   )
 }
@@ -1515,9 +1684,13 @@ function StartScreen({ onStart }) {
 function MissionScreen({ market, product, briefing, scores, buyer, onMissionStart, onBack }) {
   const profile = MARKET_PROFILES[market.id]
   const platformInfo = MARKET_ONLINE_PLATFORMS[market.id]
+  // ---- GAME UI REDESIGN v2: 선택된 국가의 실제 배경 이미지를 시네마틱
+  // 배경으로 사용한다(순수 표시용, 게임 데이터/로직과 무관). ----
+  const countryHeroStyle = getCountryHeroStyle(market)
 
   return (
-    <div className="mission-screen">
+    <div className={`mission-screen${countryHeroStyle ? ' game-screen--country-bg' : ''}`} style={countryHeroStyle}>
+      <GlobalTradeHeader market={market} budget={briefing.budget} reputation={scores.trust} />
       <div className="screen__glow" aria-hidden="true" />
       <div className="screen__grid" aria-hidden="true" />
 
@@ -1534,41 +1707,26 @@ function MissionScreen({ market, product, briefing, scores, buyer, onMissionStar
             새 데이터 없이 순수 문구 장식이다(어떤 값도 계산하지 않음). */}
         <div className="mission-card__layout">
         <div className="mission-card__left">
-        <span className="mission-badge">MISSION BRIEFING</span>
+        <span className="mission-badge">TRADE BRIEF</span>
 
         <h1 className="mission-title">
           <MarketFlagIcon code={market.id} className="mission-title__flag" />
           {market.name} MARKET
         </h1>
 
-        {/* ---- Phase 8: MISSION 단계에서부터 이번 판에 만난 BUYER가
-            누구인지(이름/Concept/성향) 미리 확인할 수 있게 한다. 새 계산
-            없이 buyer(BUYER_TYPES 항목)를 BuyerIdentityCard에 그대로
-            넘길 뿐이다. ---- */}
-        {buyer && (
-          <BuyerIdentityCard market={market} profile={profile} buyerType={buyer} />
-        )}
-
-        <div className="mission-body">
-          <p>
-            당신은 한국 브랜드의
-            <br />
-            해외시장 담당자입니다.
-          </p>
-          <p>
-            {product.name}으로
-            <br />
-            {market.name} 시장에서 첫 판매를 만들어내는 것이 이번 미션입니다.
-          </p>
-          <p>&#128161; {profile.hint}</p>
-        </div>
-
+        {/* ---- Request: 전체 국가 공통 MISSION OBJECTIVE 위치 수정 ----
+            기존에는 이 섹션이 .mission-card__right 컬럼 맨 위에 있어서,
+            두 컬럼이 세로로 쌓이는 폭(1200px 미만)에서는 제목 -> 바이어
+            정보 -> 상품 설명이 전부 지나간 뒤에야 화면 아주 아래쪽에서
+            보였다. MissionScreen은 모든 국가가 함께 쓰는 단일 컴포넌트이므로
+            국가별 CSS 없이 이 한 곳에서 섹션의 JSX 위치만 "제목 바로 아래,
+            바이어/상품 정보보다 위"로 옮기면 모든 국가에 동일하게 적용된다.
+            클래스명/데이터/계산(getMissionBriefing 등)은 전혀 바뀌지
+            않았다. ---- */}
         {/* ---- 9-2단계: MISSION OBJECTIVE 카드 ----
             "이번 턴(미션)에서 무엇을 해야 하는지"를 한눈에 보여주는 목표
             패널. 값은 전부 getMissionBriefing(product)이 실제로 계산한
             briefing에서만 가져오며 새 숫자를 만들어내지 않는다. */}
-        </div>
-        <div className="mission-card__right">
         <section className="mission-objective">
           <span className="mission-objective__badge">&#127919; MISSION OBJECTIVE</span>
           <p className="mission-objective__text">
@@ -1601,17 +1759,53 @@ function MissionScreen({ market, product, briefing, scores, buyer, onMissionStar
           </div>
         </section>
 
+        {/* ---- Phase 8: MISSION 단계에서부터 이번 판에 만난 BUYER가
+            누구인지(이름/Concept/성향) 미리 확인할 수 있게 한다. 새 계산
+            없이 buyer(BUYER_TYPES 항목)를 BuyerIdentityCard에 그대로
+            넘길 뿐이다. ---- */}
+        {buyer && (
+          <BuyerIdentityCard
+            market={market}
+            profile={profile}
+            buyerType={buyer}
+            accent={MARKET_ACCENT[market.id]}
+            variant="featured"
+          />
+        )}
+
+        <div className="mission-body">
+          <p>
+            당신은 한국 브랜드의
+            <br />
+            해외시장 담당자입니다.
+          </p>
+          <p>
+            {product.name}으로
+            <br />
+            {market.name} 시장에서 첫 판매를 만들어내는 것이 이번 미션입니다.
+          </p>
+          <p>&#128161; {profile.hint}</p>
+        </div>
+        </div>
+        <div className="mission-card__right">
+
         <dl className="mission-info">
           <div className="mission-info__row">
             <dt>PRODUCT</dt>
             <dd>{product.name}</dd>
           </div>
+          {buyer && (
+            <div className="mission-info__row">
+              <dt>BUYER</dt>
+              <dd>{buyer.name}</dd>
+            </div>
+          )}
           <div className="mission-info__row">
             <dt>핵심 전략</dt>
             <dd>{profile.emphasisLabel}</dd>
           </div>
           <div className="mission-info__row">
-            <dt>보유 예산</dt>
+            <dt>STARTING CAPITAL</dt>
             <dd>&#8361;{briefing.budget.toLocaleString()}</dd>
           </div>
           <div className="mission-info__row">
@@ -1655,7 +1849,7 @@ function MissionScreen({ market, product, briefing, scores, buyer, onMissionStar
           className="start-button start-game-button"
           onClick={onMissionStart}
         >
-          <span>MISSION START</span>
+          <span>BEGIN NEGOTIATION</span>
           <span className="start-game-button__arrow" aria-hidden="true">
             &#8594;
           </span>
@@ -1667,7 +1861,7 @@ function MissionScreen({ market, product, briefing, scores, buyer, onMissionStar
   )
 }
 
-function SelectMarketScreen({ selectedMarket, onSelect, onNext }) {
+function SelectMarketScreen({ selectedMarket, onSelect, onNext, budget, reputation }) {
   const selectedOption =
     MARKET_OPTIONS.find((market) => market.id === selectedMarket) ?? null
 
@@ -1676,8 +1870,20 @@ function SelectMarketScreen({ selectedMarket, onSelect, onNext }) {
     onSelect(market.id)
   }
 
+  // ---- STEP 2 (이미지 적용): MARKET SELECT는 world-map.png를 아주 옅은
+  // 보조 배경으로만 사용한다(카드 가독성이 우선이므로 진하게 쓰지 않는다).
+  // ---- Request: SELECT MARKET 배경을 START 화면과 완전히 동일한
+  // 이미지/분위기로 통일한다. 지도 패널 안의 world-map.png <img>는 그대로
+  // 유지하고, 화면 전체 배경(CSS 변수)만 START_BG_IMAGE로 바꾼다. ----
+  const marketHeroStyle = { '--market-hero-image': `url(${START_BG_IMAGE})` }
+
+  // ---- GAME UI REDESIGN: 선택된 시장의 실제 scoreWeights(게임 계산에
+  // 이미 쓰이는 값)만 막대 그래프로 보여준다. 새 수치를 지어내지 않는다.
+  const selectedWeights = selectedOption ? MARKET_PROFILES[selectedOption.id].scoreWeights : null
+
   return (
-    <div className="market-screen">
+    <div className="market-screen market-screen--hero" style={marketHeroStyle}>
+      <GlobalTradeHeader market={selectedOption} budget={budget} reputation={reputation} />
       <div className="screen__glow" aria-hidden="true" />
       <div className="screen__grid" aria-hidden="true" />
 
@@ -1692,6 +1898,105 @@ function SelectMarketScreen({ selectedMarket, onSelect, onNext }) {
           <br />
           무역 전략이 달라집니다.
         </p>
+
+        {/* ---- GAME UI REDESIGN: 세계지도 패널 + 선택 시장 상세 패널을
+            나란히 보여주는 2단 레이아웃(design-reference.png의 02 MARKET
+            SELECT 구조 참고). 지도는 world-map.png를 그대로 사용하고,
+            아래 6개 카드 그리드의 선택 로직은 전혀 건드리지 않는다. ---- */}
+        <div className="market-explore-layout">
+          <div className="market-map-panel">
+            <span className="market-map-panel__badge">&#127760; EXPLORE NEW OPPORTUNITIES!</span>
+            <img src={WORLD_MAP_IMAGE} alt="" className="market-map-panel__image" />
+          </div>
+
+          {selectedOption ? (
+            <section className="result-panel market-intel-panel">
+              <span className="result-panel__badge">SELECTED MARKET</span>
+              <h2 className="result-panel__title">
+                <MarketFlagIcon
+                  code={selectedOption.id}
+                  className="result-panel__flag"
+                />
+                {selectedOption.name}
+              </h2>
+              <div className="result-panel__desc">
+                <p>{selectedOption.description}</p>
+              </div>
+
+              {/* ---- GAME UI REDESIGN: 실제 MARKET_PROFILES.scoreWeights
+                  값을 0~100% 막대로 보여준다. 라벨은 실제 의미대로
+                  "~FOCUS"로 표기했으며, 데이터에 없는 항목(시장 잠재력/
+                  경쟁도/물류 점수 등)은 지어내지 않는다. ---- */}
+              <div className="market-weight-bars">
+                <div className="market-weight-bar">
+                  <span className="market-weight-bar__label">MARKET FIT FOCUS</span>
+                  <div className="market-weight-bar__track">
+                    <div
+                      className="market-weight-bar__fill"
+                      style={{ width: `${getWeightPercent(selectedWeights.marketFit)}%` }}
+                    />
+                  </div>
+                </div>
+                <div className="market-weight-bar">
+                  <span className="market-weight-bar__label">TRUST FOCUS</span>
+                  <div className="market-weight-bar__track">
+                    <div
+                      className="market-weight-bar__fill"
+                      style={{ width: `${getWeightPercent(selectedWeights.trust)}%` }}
+                    />
+                  </div>
+                </div>
+                <div className="market-weight-bar">
+                  <span className="market-weight-bar__label">OPERATIONS FOCUS</span>
+                  <div className="market-weight-bar__track">
+                    <div
+                      className="market-weight-bar__fill"
+                      style={{ width: `${getWeightPercent(selectedWeights.operations)}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* ---- GLOBAL DESIGN UPGRADE: MARKET INTELLIGENCE ----
+                  기존 MARKET_PROFILES/MARKET_ONLINE_PLATFORMS 값만 그대로
+                  보여준다. 실제 데이터에 없는 수치를 새로 만들지 않고,
+                  이미 있는 전략 포커스/핵심 전략/시장 코멘트/온라인
+                  플랫폼 정보만 재구성해서 보여준다. ---- */}
+              <div className="market-intel-grid">
+                <span className="market-intel-panel__label">&#128202; MARKET INTELLIGENCE</span>
+                <div className="market-intel-grid__row">
+                  <span className="market-intel-grid__label">STRATEGY FOCUS</span>
+                  <span className="market-intel-grid__value">{selectedOption.strategy}</span>
+                </div>
+                <div className="market-intel-grid__row">
+                  <span className="market-intel-grid__label">KEY FOCUS</span>
+                  <span className="market-intel-grid__value">{MARKET_PROFILES[selectedOption.id].emphasisLabel}</span>
+                </div>
+                <div className="market-intel-grid__row">
+                  <span className="market-intel-grid__label">MARKET NOTE</span>
+                  <span className="market-intel-grid__value">{MARKET_PROFILES[selectedOption.id].hint}</span>
+                </div>
+                <div className="market-intel-grid__row">
+                  <span className="market-intel-grid__label">
+                    {MARKET_ONLINE_PLATFORMS[selectedOption.id].platforms.length > 1 ? 'ONLINE PLATFORMS' : 'ONLINE PLATFORM'}
+                  </span>
+                  <span className="market-intel-grid__value">
+                    {MARKET_ONLINE_PLATFORMS[selectedOption.id].platforms.join(' · ')}
+                  </span>
+                </div>
+              </div>
+            </section>
+          ) : (
+            <section className="result-panel market-intel-panel market-intel-panel--empty">
+              <span className="result-panel__badge">MARKET INTELLIGENCE</span>
+              <p className="market-intel-panel__placeholder">
+                아래에서 진출할 시장을 선택하면
+                <br />
+                상세 정보가 여기에 표시됩니다.
+              </p>
+            </section>
+          )}
+        </div>
 
         <div className="market-grid">
           {MARKET_OPTIONS.map((market) => {
@@ -1745,22 +2050,6 @@ function SelectMarketScreen({ selectedMarket, onSelect, onNext }) {
           })}
         </div>
 
-        {selectedOption && (
-          <section className="result-panel">
-            <span className="result-panel__badge">SELECTED MARKET</span>
-            <h2 className="result-panel__title">
-              <MarketFlagIcon
-                code={selectedOption.id}
-                className="result-panel__flag"
-              />
-              {selectedOption.name}
-            </h2>
-            <div className="result-panel__desc">
-              <p>{selectedOption.description}</p>
-            </div>
-          </section>
-        )}
-
         <button
           type="button"
           className="start-button"
@@ -1774,29 +2063,45 @@ function SelectMarketScreen({ selectedMarket, onSelect, onNext }) {
   )
 }
 
-function SelectProductScreen({ market, selectedProductId, onNext, onBack }) {
+function SelectProductScreen({ market, selectedProductId, onNext, onBack, budget, reputation }) {
   const marketAccent = market ? MARKET_ACCENT[market.id] : null
   // ---- Phase 4: 상품의 시장수요/경쟁도를 breakdown 목록 안에 묻어두지 않고
   // 카드 상단의 칩(tags)으로 끌어올려 "이 상품의 핵심 차별점"이 먼저 눈에
   // 들어오게 한다. 값과 색 판정(getBreakdownTone)은 기존 것을 그대로
   // 재사용하며, 새 점수나 판정을 추가하지 않는다.
-  const productChoices = getProductsByMarket(market?.id).map((product, index) => ({
-    id: String(index + 1),
-    title: `${PRODUCT_CATEGORY_ICONS[product.category] ?? ''} ${product.name}`.trim(),
-    subtitle: product.sellingPoint,
-    tags: [
-      { key: 'demand', label: `수요 ${product.demand}`, tone: getBreakdownTone('시장수요', product.demand) },
-      { key: 'competition', label: `경쟁 ${product.competition}`, tone: getBreakdownTone('경쟁도', product.competition) },
-    ],
-    breakdown: [
-      { label: '카테고리', amount: product.category },
-      { label: '판매가격', amount: `₩${product.price.toLocaleString()}` },
-      { label: 'MOQ', amount: `${product.moq.toLocaleString()}개` },
-      { label: '현지화 난이도', amount: product.localizationDifficulty },
-      { label: '광고 난이도', amount: product.adDifficulty },
-    ],
-    product,
-  }))
+  const productChoices = getProductsByMarket(market?.id).map((product, index) => {
+    // ---- GAME UI REDESIGN: PRODUCT SELECT 전용 순수 표시용 장식(아이콘
+    // 타일 + accent 색 + SELECT 힌트). PRODUCT_CATALOG 값이나 선택 로직에는
+    // 전혀 관여하지 않으며, ChoiceCard의 다른 호출부(전략 카드/BUYER'S NEXT
+    // MOVE)는 이 필드들이 없으므로 기존 그대로 동작한다.
+    const productAccent = PRODUCT_ACCENT_PALETTE[index % PRODUCT_ACCENT_PALETTE.length]
+    return {
+      id: String(index + 1),
+      title: `${PRODUCT_CATEGORY_ICONS[product.category] ?? ''} ${product.name}`.trim(),
+      subtitle: product.sellingPoint,
+      valueBadge: `EXPORT VALUE \u20A9${product.price.toLocaleString()}`,
+      tagsLabel: 'TRADE FIT',
+      tags: [
+        { key: 'demand', label: `수요 ${product.demand}`, tone: getBreakdownTone('시장수요', product.demand) },
+        { key: 'competition', label: `경쟁 ${product.competition}`, tone: getBreakdownTone('경쟁도', product.competition) },
+      ],
+      breakdown: [
+        { label: '카테고리', amount: product.category },
+        { label: '판매가격', amount: `₩${product.price.toLocaleString()}` },
+        { label: 'MOQ', amount: `${product.moq.toLocaleString()}개` },
+        { label: '현지화 난이도', amount: product.localizationDifficulty },
+        { label: '광고 난이도', amount: product.adDifficulty },
+      ],
+      iconContent: PRODUCT_CATEGORY_ICONS[product.category] ?? '\u{1F4E6}',
+      cardStyle: {
+        '--product-accent': productAccent.color,
+        '--product-accent-tint': productAccent.tint,
+        '--product-accent-border': productAccent.border,
+      },
+      selectHint: 'SELECT',
+      product,
+    }
+  })
 
   // ---- 11단계: MISSION → BACK으로 돌아왔을 때 이미 선택했던 PRODUCT가
   // 그대로 선택된 채로 보이도록, 마운트 시점의 초기 선택값만 기존
@@ -1815,8 +2120,13 @@ function SelectProductScreen({ market, selectedProductId, onNext, onBack }) {
     setSelectedId(choice.id)
   }
 
+  // ---- GAME UI REDESIGN v2: 선택된 국가의 실제 배경 이미지를 시네마틱
+  // 배경으로 사용한다(순수 표시용, 게임 데이터/로직과 무관). ----
+  const countryHeroStyle = getCountryHeroStyle(market)
+
   return (
-    <div className="product-screen">
+    <div className={`product-screen${countryHeroStyle ? ' game-screen--country-bg' : ''}`} style={countryHeroStyle}>
+      <GlobalTradeHeader market={market} budget={budget} reputation={reputation} />
       <div className="screen__glow" aria-hidden="true" />
       <div className="screen__grid" aria-hidden="true" />
 
@@ -1930,31 +2240,6 @@ function computeFinalEffects(option, round, market, product) {
   return { effects, notes, budgetPctAdjustment }
 }
 
-// ---- 9-2단계: TURN 진행 트랙 ----
-// turn(1-based 현재 턴)과 totalTurns(=STRATEGY_ROUNDS.length, 하드코딩하지
-// 않고 그대로 전달받음)만으로 완료/진행중/남음 상태의 점을 생성한다. 라운드
-// 수가 바뀌어도 steps 배열이 totalTurns 기준으로 자동 생성되므로 그대로
-// 대응한다.
-function TurnProgressTrack({ turn, totalTurns }) {
-  const steps = Array.from({ length: totalTurns }, (_, index) => index + 1)
-  return (
-    <div className="turn-track" role="list" aria-label={`turn ${turn} of ${totalTurns}`}>
-      {steps.map((step) => {
-        const state = step < turn ? 'done' : step === turn ? 'current' : 'upcoming'
-        return (
-          <span
-            key={step}
-            className={`turn-track__step turn-track__step--${state}`}
-            role="listitem"
-          >
-            <span className="turn-track__dot">{state === 'done' ? '✓' : step}</span>
-          </span>
-        )
-      })}
-    </div>
-  )
-}
-
 // ---- 9-3단계: 값이 실제로 바뀔 때만 카드에 짧은 glow/scale 펄스를 주는
 // 순수 표시용 래퍼. 이전 값은 useRef로만 기억하고, 어떤 점수/예산도 새로
 // 계산하지 않는다 — props로 들어온 값을 그대로 보여줄 뿐이다. 최초 마운트
@@ -2021,74 +2306,6 @@ function AnimatedStatCard({ label, value, format, progress, highlight = false })
           />
         </div>
       )}
-    </div>
-  )
-}
-
-// Small in-game HUD shown at the top of every decision screen (7단계 스펙
-// 2/8/9번), reusing the existing .stat-grid/.stat-card tiles so it visually
-// matches FINAL RESULT's stat cards, plus a compact turn/progress row.
-// ---- 9-2단계 강화: SELECTED MARKET/PRODUCT 정보 줄, CURRENT SCORE 스탯
-// 카드, 완료/진행중/남음을 구분하는 TURN 트랙을 추가했다. 모든 값은 실제
-// game state(props)에서만 가져오고, 기존 BUDGET/TRUST/MARKET FIT/
-// AD EFFICIENCY 카드와 계산 방식은 전혀 건드리지 않는다. ----
-// ---- 9-3단계 강화: 턴이 바뀌어도 이 컴포넌트 자체는 리마운트되지 않도록
-// App()/MissionDecisionScreen에서 그대로 유지한 채 렌더링해, 값이 바뀌는
-// 순간을 AnimatedStatCard가 감지해 짧게 강조할 수 있게 한다. ----
-function MissionHUD({
-  market,
-  product,
-  budget,
-  buyerTrust,
-  marketFit,
-  adEfficiency,
-  currentScore,
-  targetScore,
-  turn,
-  totalTurns,
-}) {
-  return (
-    <div className="mission-hud">
-      <div className="mission-hud__info">
-        <span className="mission-hud__info-item">
-          <MarketFlagIcon code={market.id} className="mission-hud__info-flag" />
-          {market.name}
-        </span>
-        <span className="mission-hud__info-sep" aria-hidden="true">
-          &bull;
-        </span>
-        <span className="mission-hud__info-item">{product.name}</span>
-      </div>
-      <div className="stat-grid mission-hud__grid">
-        <AnimatedStatCard
-          label={'\u{1F4B0} BUDGET'}
-          value={budget}
-          format={(v) => `₩${v.toLocaleString()}`}
-        />
-        <AnimatedStatCard label={'⭐ TRUST'} value={buyerTrust} />
-        <AnimatedStatCard label={'\u{1F4C8} MARKET FIT'} value={marketFit} />
-        <AnimatedStatCard label={'\u{1F4E3} AD EFFICIENCY'} value={adEfficiency} />
-        {/* ---- 10단계: SCORE 카드가 이미 계산되어 있는 currentScore(값
-            자체)만 그대로 애니메이션(pulse/방향 화살표) 대상으로 삼으면서,
-            format으로 targetScore(MissionScreen과 같은
-            getMissionBriefing().targetScore)를 함께 보여줘 매 턴마다
-            "지금 몇 점이고 목표까지 얼마나 남았는지"가 이어지게 한다. 실제
-            비교 대상 값(prevValueRef)은 currentScore 그대로라 방향 표시
-            판정에는 아무 영향이 없다. ---- */}
-        <AnimatedStatCard
-          label={'\u{1F3C6} SCORE'}
-          value={currentScore}
-          format={(v) => `${v} / ${targetScore}`}
-          progress={targetScore > 0 ? (currentScore / targetScore) * 100 : 0}
-          highlight
-        />
-      </div>
-      <div className="mission-hud__turn">
-        <span className="mission-hud__turn-label">
-          &#9889; TURN {turn} / {totalTurns}
-        </span>
-        <TurnProgressTrack turn={turn} totalTurns={totalTurns} />
-      </div>
     </div>
   )
 }
@@ -2180,6 +2397,49 @@ function getKeyEffects(effects) {
     }))
 }
 
+// ---- GAME SCENE REDESIGN v3: NEGOTIATION 화면을 실제 대화처럼 보여주는
+// 채팅 말풍선 UI. round.prompt(기존 STRATEGY_ROUNDS 데이터, 지금까지
+// "MISSION OBJECTIVE" 박스로 보여주던 바로 그 텍스트)를 바이어 말풍선으로,
+// 전략을 선택하면 그 selectedOption.title(기존 데이터)을 플레이어 응답
+// 말풍선으로 보여준다. 새로운 대사/데이터는 전혀 만들지 않는다. ----
+function NegotiationDialogue({ market, buyer, round, selectedOption }) {
+  const buyerImage = MARKET_BUYER_IMAGES[market.id]
+  const buyerName = buyer ? buyer.name : `${market.nameKo} 바이어`
+  const platformInfo = MARKET_ONLINE_PLATFORMS[market.id]
+  return (
+    <div className="negotiation-dialogue">
+      <div className="negotiation-dialogue__bubble negotiation-dialogue__bubble--buyer">
+        <span className="negotiation-dialogue__avatar" aria-hidden="true">
+          {buyerImage ? (
+            <img src={buyerImage} alt="" draggable="false" />
+          ) : (
+            <MarketFlagIcon code={market.id} />
+          )}
+        </span>
+        <span className="negotiation-dialogue__content">
+          <span className="negotiation-dialogue__name">{buyerName}</span>
+          <span className="negotiation-dialogue__role">
+            {market.name} BUYER{platformInfo ? ` \u00b7 ${platformInfo.platforms[0]}` : ''}
+          </span>
+          <span className="negotiation-dialogue__text">{round.prompt}</span>
+        </span>
+      </div>
+
+      {selectedOption && (
+        <div
+          key={selectedOption.id}
+          className="negotiation-dialogue__bubble negotiation-dialogue__bubble--player"
+        >
+          <span className="negotiation-dialogue__content">
+            <span className="negotiation-dialogue__name">YOU</span>
+            <span className="negotiation-dialogue__text">{selectedOption.title}</span>
+          </span>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function MissionDecisionScreen({
   roundIndex,
   totalRounds,
@@ -2189,6 +2449,8 @@ function MissionDecisionScreen({
   budget,
   scores,
   onNext,
+  buyer,
+  selections,
 }) {
   // ---- 9-3단계: 턴이 바뀌면(roundIndex 변경) 이전 턴에 남아있던 선택이
   // 다음 턴 카드에 그대로 이어져 보이지 않아야 한다. useEffect로 다시
@@ -2201,7 +2463,17 @@ function MissionDecisionScreen({
   // ---- 10단계: MissionScreen의 TARGET SCORE와 같은 소스(getMissionBriefing)
   // 를 그대로 다시 호출해 targetScore만 꺼낸다. App()에 새 state/prop을
   // 추가하지 않고, product는 이미 이 컴포넌트의 prop으로 갖고 있다.
-  const targetScore = getMissionBriefing(product).targetScore
+  const briefing = getMissionBriefing(product)
+
+  // ---- GAME UI REDESIGN: 협상 중에도 BUYER INTEREST를 실시간으로
+  // 보여준다. 이미 검증된 calculateBuyerInterest를 지금까지 진행된
+  // selections(App()의 기존 state, 아직 선택하지 않은 라운드의 키는
+  // undefined)로 그대로 호출할 뿐이며, 이 함수는 그런 부분 입력을 이미
+  // 안전하게 처리한다(새 판정 로직을 추가하지 않음).
+  const turnBuyerInterest = buyer
+    ? calculateBuyerInterest(scores, market, product, selections ?? {}, buyer)
+    : null
+  const turnBuyerTier = turnBuyerInterest !== null ? getBuyerInterestMessage(turnBuyerInterest, market) : null
 
   const choices = round.options.map((option) => {
     const { effects, notes, budgetPctAdjustment } = computeFinalEffects(option, round, market, product)
@@ -2224,173 +2496,226 @@ function MissionDecisionScreen({
     setSelection({ roundIndex, id: option.id })
   }
 
+  // ---- GAME UI REDESIGN v2: 선택된 국가의 실제 배경 이미지를 시네마틱
+  // 배경으로 사용한다(순수 표시용, 게임 데이터/로직과 무관). ----
+  const countryHeroStyle = getCountryHeroStyle(market)
+
   return (
-    <div className="decision-screen">
+    <div className={`decision-screen decision-screen--compact${countryHeroStyle ? ' game-screen--country-bg' : ''}`} style={countryHeroStyle}>
+      <GlobalTradeHeader
+        market={market}
+        budget={budget}
+        reputation={scores.trust}
+        turn={roundIndex + 1}
+        totalTurns={totalRounds}
+      />
       <div className="screen__glow" aria-hidden="true" />
       <div className="screen__grid" aria-hidden="true" />
 
-      <main className="decision-card">
-        {/* ---- 9-3단계: TURN 전환 연출 ----
-            턴이 바뀔 때마다 roundIndex를 key로 삼아 제목/설명 블록만 짧게
-            fade-in 시킨다. MissionHUD는 이 밖에 그대로 두어(리마운트되지
-            않게) 값이 바뀌는 순간을 자체적으로 감지해 강조할 수 있게 한다. */}
-        <div key={`head-${roundIndex}`} className="decision-turn-fade">
-          <span className="price-step">
-            DECISION {roundIndex + 1} / {totalRounds}
-          </span>
-
-          <h1 className="price-title">
-            {round.icon} {round.title}
-          </h1>
-
-          <p className="price-lead">
-            {market.name} · {product.name}
-          </p>
-        </div>
-
-        <MissionHUD
-          market={market}
-          product={product}
-          budget={budget}
-          buyerTrust={scores.trust}
-          marketFit={scores.marketFit}
-          adEfficiency={scores.adEfficiency}
-          currentScore={computeTotalScore(scores)}
-          targetScore={targetScore}
-          turn={roundIndex + 1}
-          totalTurns={totalRounds}
-        />
-
-        {/* ---- 9-3단계: 턴 본문(목표/전략 카드/결과)도 roundIndex가 바뀌면
-            함께 fade-in 되도록 같은 방식으로 묶는다. ---- */}
+      {/* ---- REFERENCE LAYOUT PASS: 사용자가 첨부한 레퍼런스 이미지의
+          "왼쪽 큰 캐릭터 + 오른쪽 위 대화/MISSION OBJECTIVE + 하단 전략
+          옵션/CONFIRM" 한 화면 구성을 그대로 따라간다. MissionHUD의
+          BUDGET/TRUST/MARKET FIT/AD EFFICIENCY 카드, 장식용
+          NegotiationSidebarNav, 큰 "DECISION n/4" 헤딩은 레퍼런스에 없는
+          요소라 이 화면에서는 그리지 않는다 -- 다만 그 값들은 전부 그대로
+          계산되어 다른 곳에 남아 있다: BUDGET→헤더 CAPITAL, TRUST→헤더
+          REPUTATION, SCORE→아래 MISSION OBJECTIVE의 CURRENT SCORE. 점수
+          계산/턴 진행/선택 로직은 전혀 건드리지 않았다. ---- */}
+      <main className="decision-card decision-card--compact">
         <div key={`body-${roundIndex}`} className="decision-turn-fade">
-        {/* ---- 9-2단계: 턴별 MISSION OBJECTIVE ----
-            round.prompt(기존 STRATEGY_ROUNDS 데이터)를 그대로 사용해 "이번
-            턴에 무엇을 결정해야 하는지"를 게임의 목표 패널처럼 보여준다.
-            새로운 문구를 만들지 않고 기존 데이터만 재사용한다. */}
-        <div className="decision-layout">
-        <div className="decision-layout__left">
-        <section className="mission-objective mission-objective--turn">
-          <span className="mission-objective__badge">&#127919; MISSION OBJECTIVE</span>
-          <p className="mission-objective__text">{round.prompt}</p>
-        </section>
-
-        </div>
-        <div className="decision-layout__right">
-        <span className="choice-list__label">STRATEGY OPTIONS</span>
-        <div className="choice-list">
-          {choices.map((choice) => (
-            <ChoiceCard
-              key={choice.id}
-              option={choice}
-              selected={selectedId === choice.id}
-              muted={selectedId !== null && selectedId !== choice.id}
-              onSelect={handleSelect}
-            />
-          ))}
-        </div>
-
-        {selectedOption && (
-          <StrategyEffectToast
-            key={selectedOption.id}
-            option={selectedOption}
-            effects={selectedOption.effects}
-            budgetDelta={budgetDelta}
-            market={market}
-          />
-        )}
-
-        {selectedOption && (
-          <section className="result-panel">
-            <span className="result-panel__badge">선택 완료</span>
-            <h2 className="result-panel__title">{selectedOption.title}</h2>
-            <div className="result-panel__desc">
-              {selectedOption.result.map((line) => (
-                <p key={line}>{line}</p>
-              ))}
+        <div className="decision-scene">
+          <div className="decision-scene__character-col">
+            {/* ---- Request: 레퍼런스처럼 캐릭터 위에 국가/시장 정보를
+                보여준다. 새 문구를 만들지 않고 MISSION 화면과 완전히 같은
+                .mission-badge/.mission-title + MarketFlagIcon 조합과 기존
+                market.strategy/market.name 데이터를 그대로 재사용한다. ---- */}
+            <div className="decision-scene__market-title">
+              <span className="mission-badge">{market.strategy}</span>
+              <h1 className="mission-title">
+                <MarketFlagIcon code={market.id} className="mission-title__flag" />
+                {market.name} MARKET
+              </h1>
             </div>
-            <ul className="result-panel__scores">
-              {Object.entries(selectedOption.effects)
-                .filter(([, value]) => value !== 0)
-                .map(([key, value]) => (
-                  <li key={key}>
-                    <span>{SCORE_LABELS[key]}</span>
-                    <span
-                      className={
-                        value > 0
-                          ? 'result-panel__delta result-panel__delta--up'
-                          : 'result-panel__delta result-panel__delta--down'
-                      }
-                    >
-                      {value > 0 ? `+${value}` : value}
-                    </span>
-                  </li>
-                ))}
-            </ul>
-            {selectedOption.countryNotes.length > 0 && (
-              <div className="result-panel__desc">
-                {selectedOption.countryNotes.map((note) => (
-                  <p key={note}>{note}</p>
-                ))}
+            {buyer && (
+              <BuyerIdentityCard
+                market={market}
+                profile={MARKET_PROFILES[market.id]}
+                accent={MARKET_ACCENT[market.id]}
+                buyerType={buyer}
+                variant="featured"
+              />
+            )}
+            {buyer && turnBuyerTier && (
+              <div className="turn-buyer-status turn-buyer-status--compact">
+                <div className="turn-buyer-status__interest">
+                  <span className="turn-buyer-status__label">&#10084;&#65039; BUYER INTEREST</span>
+                  <span className="turn-buyer-status__value">{turnBuyerInterest} / 100</span>
+                </div>
+                <BuyerInterestMeter interestScore={turnBuyerInterest} level={turnBuyerTier.level} />
+                <div className="turn-buyer-status__concerns">
+                  <span className="turn-buyer-status__concerns-label">KEY CONCERNS</span>
+                  <span className="turn-buyer-status__concern-chip">{BUYER_CONCEPTS[buyer.concept]?.primaryConcern}</span>
+                  <span className="turn-buyer-status__concern-chip">{buyer.secondaryConcern}</span>
+                </div>
               </div>
             )}
-          </section>
-        )}
+          </div>
 
-        {selectedOption && feedback && (
-          <section className="ai-feedback-panel">
-            <span className="ai-feedback-panel__badge">
-              &#129302; AI BUYER FEEDBACK
-            </span>
-            <p className="ai-feedback-panel__subtitle">
-              &quot;선택한 전략을 {market.name} 바이어의 관점에서 분석합니다.&quot;
-            </p>
+          <div className="decision-scene__right-col">
+            <div className="decision-scene__dialogue-row">
+              <NegotiationDialogue market={market} buyer={buyer} round={round} selectedOption={selectedOption} />
 
-            <div className="ai-feedback-panel__section">
-              <span className="ai-feedback-panel__label">바이어 관심사</span>
-              <div className="result-panel__desc">
-                <p>{profile.buyerIntro}</p>
-              </div>
+              {/* ---- MISSION OBJECTIVE: MissionScreen과 완전히 같은 데이터
+                  소스(getMissionBriefing(product)/totalRounds/
+                  computeTotalScore(scores))를 다시 읽어 보여줄 뿐, 새
+                  숫자는 없다. ---- */}
+              <section className="mission-objective mission-objective--compact">
+                <span className="mission-objective__badge">&#127919; MISSION OBJECTIVE</span>
+                <div className="mission-objective__targets mission-objective__targets--compact">
+                  <div className="mission-objective__target">
+                    <span className="mission-objective__target-label">TARGET SALES</span>
+                    <span className="mission-objective__target-value">{briefing.targetSales.toLocaleString()}개</span>
+                  </div>
+                  <div className="mission-objective__target">
+                    <span className="mission-objective__target-label">TARGET SCORE</span>
+                    <span className="mission-objective__target-value">{briefing.targetScore}점</span>
+                  </div>
+                  <div className="mission-objective__target">
+                    <span className="mission-objective__target-label">CURRENT SCORE</span>
+                    <span className="mission-objective__target-value">{computeTotalScore(scores)}점</span>
+                  </div>
+                  <div className="mission-objective__target">
+                    <span className="mission-objective__target-label">DECISIONS</span>
+                    <span className="mission-objective__target-value">{totalRounds}회</span>
+                  </div>
+                </div>
+              </section>
             </div>
 
-            <div className="ai-feedback-panel__section">
-              <span className="ai-feedback-panel__label">전략</span>
-              <span className="strategy-row__value">{feedback.strategy}</span>
-            </div>
-
-            <div className="ai-feedback-panel__section">
-              <span className="ai-feedback-panel__label">
-                AI BUYER FEEDBACK
+            <div className="decision-scene__bottom">
+              <span className="choice-list__label">
+                {round.icon} DECISION {roundIndex + 1} / {totalRounds} &middot; {round.title}
               </span>
-              <div className="result-panel__desc">
-                {feedback.feedback.map((line) => (
-                  <p key={line}>{line}</p>
+              <div className="choice-list choice-list--row">
+                {choices.map((choice) => (
+                  <ChoiceCard
+                    key={choice.id}
+                    option={choice}
+                    selected={selectedId === choice.id}
+                    muted={selectedId !== null && selectedId !== choice.id}
+                    onSelect={handleSelect}
+                  />
                 ))}
               </div>
-            </div>
 
-            <div className="ai-feedback-panel__section">
-              <span className="ai-feedback-panel__label">TRADE TIP</span>
-              <div className="result-panel__desc">
-                {feedback.tip.map((line) => (
-                  <p key={line}>{line}</p>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
+              {selectedOption && (
+                <StrategyEffectToast
+                  key={selectedOption.id}
+                  option={selectedOption}
+                  effects={selectedOption.effects}
+                  budgetDelta={budgetDelta}
+                  market={market}
+                />
+              )}
 
-        {selectedOption && (
-          <button
-            type="button"
-            className="start-button"
-            onClick={() => onNext(selectedOption)}
-          >
-            {isLastRound ? '바이어 반응 확인 →' : '다음 의사결정 →'}
-          </button>
-        )}
+              {selectedOption && (
+                <section className="result-panel">
+                  <span className="result-panel__badge">선택 완료</span>
+                  <h2 className="result-panel__title">{selectedOption.title}</h2>
+                  <div className="result-panel__desc">
+                    {selectedOption.result.map((line) => (
+                      <p key={line}>{line}</p>
+                    ))}
+                  </div>
+                  <ul className="result-panel__scores">
+                    {Object.entries(selectedOption.effects)
+                      .filter(([, value]) => value !== 0)
+                      .map(([key, value]) => (
+                        <li key={key}>
+                          <span>{SCORE_LABELS[key]}</span>
+                          <span
+                            className={
+                              value > 0
+                                ? 'result-panel__delta result-panel__delta--up'
+                                : 'result-panel__delta result-panel__delta--down'
+                            }
+                          >
+                            {value > 0 ? `+${value}` : value}
+                          </span>
+                        </li>
+                      ))}
+                  </ul>
+                  {selectedOption.countryNotes.length > 0 && (
+                    <div className="result-panel__desc">
+                      {selectedOption.countryNotes.map((note) => (
+                        <p key={note}>{note}</p>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {selectedOption && feedback && (
+                <section className="ai-feedback-panel">
+                  <span className="ai-feedback-panel__badge">
+                    &#129302; AI BUYER FEEDBACK
+                  </span>
+                  <p className="ai-feedback-panel__subtitle">
+                    &quot;선택한 전략을 {market.name} 바이어의 관점에서 분석합니다.&quot;
+                  </p>
+
+                  <div className="ai-feedback-panel__section">
+                    <span className="ai-feedback-panel__label">바이어 관심사</span>
+                    <div className="result-panel__desc">
+                      <p>{profile.buyerIntro}</p>
+                    </div>
+                  </div>
+
+                  <div className="ai-feedback-panel__section">
+                    <span className="ai-feedback-panel__label">전략</span>
+                    <span className="strategy-row__value">{feedback.strategy}</span>
+                  </div>
+
+                  <div className="ai-feedback-panel__section">
+                    <span className="ai-feedback-panel__label">
+                      AI BUYER FEEDBACK
+                    </span>
+                    <div className="result-panel__desc">
+                      {feedback.feedback.map((line) => (
+                        <p key={line}>{line}</p>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="ai-feedback-panel__section">
+                    <span className="ai-feedback-panel__label">TRADE TIP</span>
+                    <div className="result-panel__desc">
+                      {feedback.tip.map((line) => (
+                        <p key={line}>{line}</p>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              {/* ---- REFERENCE LAYOUT PASS: 버튼을 선택 전에도 항상
+                  보여주되(레퍼런스처럼), 선택 전에는 disabled 상태로 막아
+                  기존 onNext 호출 조건(selectedOption 존재)은 그대로
+                  지킨다. 문구/핸들러 자체(바이어 반응 확인 → / 다음
+                  의사결정 →)는 바꾸지 않는다. ---- */}
+              <button
+                type="button"
+                className="start-button confirm-strategy-button"
+                disabled={!selectedOption}
+                onClick={() => selectedOption && onNext(selectedOption)}
+              >
+                {selectedOption
+                  ? (isLastRound ? '바이어 반응 확인 →' : '다음 의사결정 →')
+                  : 'CONFIRM STRATEGY →'}
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
         </div>
       </main>
     </div>
@@ -2571,7 +2896,11 @@ function getBuyerPositives(scores, selections, buyerType = null) {
 // Buyer Identity: 국기 + "{시장 한글명} 바이어" + 기존 MARKET_PROFILES의
 // buyerIntro(있는 그대로)를 보여주는 간단한 아바타/배지 영역. 새 국가 정보나
 // 캐릭터 설정은 만들지 않는다 — market/profile에 이미 있는 값만 사용한다.
-function BuyerIdentityCard({ market, profile, accent, buyerType }) {
+function BuyerIdentityCard({ market, profile, accent, buyerType, variant = 'compact' }) {
+  // ---- GAME UI REDESIGN v2: "회사"는 실제 MARKET_ONLINE_PLATFORMS 데이터
+  // (해당 시장에서 실제로 쓰이는 온라인 플랫폼명)를 그대로 보여준다. 새
+  // 회사명을 지어내지 않는다. ----
+  const platformInfo = MARKET_ONLINE_PLATFORMS[market.id]
   const style = accent
     ? {
         '--market-accent': accent.color,
@@ -2586,19 +2915,63 @@ function BuyerIdentityCard({ market, profile, accent, buyerType }) {
   const conceptBadgeStyle = concept
     ? { color: concept.accent.color, background: concept.accent.tint, borderColor: concept.accent.border }
     : undefined
+  // ---- STEP 2 (이미지 적용): 바이어 캐릭터 이미지는 반드시 market.id로만
+  // 조회한다(buyerType은 매 게임마다 랜덤으로 바뀌는 "이번 판 바이어"의
+  // 신원일 뿐, 국가와 캐릭터 이미지의 매칭에는 절대 관여하지 않는다).
+  // MARKET_BUYER_IMAGES에 없는 시장이면(발생하지 않지만) 기존 국기
+  // 아바타로 안전하게 폴백된다.
+  const characterImage = MARKET_BUYER_IMAGES[market.id]
+  const isFeatured = variant === 'featured'
+  const avatarClassName = characterImage
+    ? 'buyer-identity__avatar buyer-identity__avatar--character'
+    : 'buyer-identity__avatar'
+  const containerClassName = [
+    'buyer-identity',
+    characterImage ? 'buyer-identity--character' : null,
+    isFeatured ? 'buyer-identity--featured' : null,
+  ]
+    .filter(Boolean)
+    .join(' ')
   return (
-    <div className="buyer-identity" style={style}>
-      <span className="buyer-identity__avatar" aria-hidden="true">
-        <MarketFlagIcon code={market.id} className="buyer-identity__flag" />
+    <div className={containerClassName} style={style}>
+      <span className={avatarClassName} aria-hidden="true">
+        {characterImage ? (
+          <>
+            <img
+              src={characterImage}
+              alt=""
+              className="buyer-identity__character"
+              draggable="false"
+            />
+            <MarketFlagIcon code={market.id} className="buyer-identity__flag buyer-identity__flag--badge" />
+          </>
+        ) : (
+          <MarketFlagIcon code={market.id} className="buyer-identity__flag" />
+        )}
       </span>
       <span className="buyer-identity__text">
         <span className="buyer-identity__name">
           {buyerType ? buyerType.name : `${market.nameKo} 바이어`}
         </span>
         <span className="buyer-identity__role">{market.name} BUYER</span>
+        {isFeatured && platformInfo && (
+          <span className="buyer-identity__company">{platformInfo.platforms.join(' \u00b7 ')}</span>
+        )}
         {concept && (
           <span className="mission-badge buyer-identity__concept-badge" style={conceptBadgeStyle}>
             {concept.label}
+          </span>
+        )}
+        {/* ---- GAME UI REDESIGN: BUYER 화면(캐릭터 강조) 전용 성향 태그.
+            buyerType.secondaryConcern/negotiationStyle은 이미 존재하는
+            실제 게임 데이터이며(BuyerResponseScreen에서도 동일 필드를
+            PRIMARY/SECONDARY CONCERN으로 이미 표시 중), 새 값을 지어내지
+            않는다. featured 변형에서만 보여 compact 사용처(TURN 등)의
+            레이아웃에는 영향이 없다. ---- */}
+        {isFeatured && buyerType && (
+          <span className="buyer-identity__traits">
+            <span className="buyer-identity__trait-chip">{buyerType.negotiationStyle}</span>
+            <span className="buyer-identity__trait-chip">{buyerType.secondaryConcern}</span>
           </span>
         )}
         {(buyerType?.description || profile?.buyerIntro) && (
@@ -2642,16 +3015,20 @@ function BuyerInterestMeter({ interestScore, level }) {
 // .buyer-card(App.css에 이미 정의돼 있었지만 미사용이던 클래스)와
 // .total-score/.mission-badge/.reaction-panel/.stat-grid/.ai-feedback-panel/
 // .start-button을 그대로 재사용해 새 CSS 없이 기존 디자인과 통일한다.
-function BuyerResponseScreen({ market, product, scores, selections, buyer, onContinue }) {
+function BuyerResponseScreen({ market, product, scores, selections, buyer, onContinue, budget }) {
   const profile = MARKET_PROFILES[market.id]
   const interestScore = calculateBuyerInterest(scores, market, product, selections, buyer)
   const tier = getBuyerInterestMessage(interestScore, market)
   const comment = getBuyerComment(market, product, interestScore, buyer)
   const concerns = getBuyerConcerns(product, selections, scores, buyer)
   const positives = getBuyerPositives(scores, selections, buyer)
+  // ---- GAME UI REDESIGN v2: 선택된 국가의 실제 배경 이미지를 시네마틱
+  // 배경으로 사용한다(순수 표시용, 게임 데이터/로직과 무관). ----
+  const countryHeroStyle = getCountryHeroStyle(market)
 
   return (
-    <div className="buyer-screen">
+    <div className={`buyer-screen${countryHeroStyle ? ' game-screen--country-bg' : ''}`} style={countryHeroStyle}>
+      <GlobalTradeHeader market={market} budget={budget} reputation={scores.trust} />
       <div className="screen__glow" aria-hidden="true" />
       <div className="screen__grid" aria-hidden="true" />
 
@@ -2664,11 +3041,18 @@ function BuyerResponseScreen({ market, product, scores, selections, buyer, onCon
         {/* ---- Phase 5: Buyer Identity. 기존 MARKET_OPTIONS/MARKET_PROFILES
             값(market.name/nameKo, profile.buyerIntro)만 사용해 "이 시장의
             실제 거래 상대방"이 등장한 느낌을 준다. 새 국가/캐릭터 정보 없음. ---- */}
-        <BuyerIdentityCard market={market} profile={profile} accent={MARKET_ACCENT[market.id]} buyerType={buyer} />
+        <BuyerIdentityCard
+          market={market}
+          profile={profile}
+          accent={MARKET_ACCENT[market.id]}
+          buyerType={buyer}
+          variant="featured"
+        />
 
         {/* ---- Phase 8: PLAYER가 읽을 수 있는 BUYER 성향 정보. 새 판정
             로직 없이 buyer(BUYER_TYPES 항목)와 BUYER_CONCEPTS의 기존 값만
             그대로 보여준다(기존 .mission-info 카드 스타일 재사용). ---- */}
+        <div className="info-panel-group">
         {buyer && (
           <dl className="mission-info buyer-profile-info">
             <div className="mission-info__row">
@@ -2770,6 +3154,7 @@ function BuyerResponseScreen({ market, product, scores, selections, buyer, onCon
           )}
         </div>
         </section>
+        </div>
 
         <button type="button" className="start-button" onClick={onContinue}>
           SEE BUYER&apos;S NEXT MOVE &#8594;
@@ -3118,7 +3503,7 @@ function calculateExportPerformance(contractResult, buyerInterest, scores, produ
 // TURN 4 → BUYER RESPONSE 다음, CONTRACT OUTCOME 이전에 표시되는 화면.
 // 기존 .buyer-screen/.buyer-card/.mission-badge/.reaction-panel/.choice-list/
 // .start-button을 그대로 재사용해 새 CSS 없이 기존 디자인과 통일한다.
-function BuyerNextMoveScreen({ market, product, scores, selections, buyer, onSelect }) {
+function BuyerNextMoveScreen({ market, product, scores, selections, buyer, onSelect, budget }) {
   const profile = MARKET_PROFILES[market.id]
   const interestScore = calculateBuyerInterest(scores, market, product, selections, buyer)
   const tier = getBuyerInterestMessage(interestScore, market)
@@ -3147,8 +3532,13 @@ function BuyerNextMoveScreen({ market, product, scores, selections, buyer, onSel
     }, 220)
   }
 
+  // ---- GAME UI REDESIGN v2: 선택된 국가의 실제 배경 이미지를 시네마틱
+  // 배경으로 사용한다(순수 표시용, 게임 데이터/로직과 무관). ----
+  const countryHeroStyle = getCountryHeroStyle(market)
+
   return (
-    <div className="buyer-screen">
+    <div className={`buyer-screen${countryHeroStyle ? ' game-screen--country-bg' : ''}`} style={countryHeroStyle}>
+      <GlobalTradeHeader market={market} budget={budget} reputation={scores.trust} />
       <div className="screen__glow" aria-hidden="true" />
       <div className="screen__grid" aria-hidden="true" />
 
@@ -3160,7 +3550,13 @@ function BuyerNextMoveScreen({ market, product, scores, selections, buyer, onSel
         {/* ---- Phase 5: BUYER RESPONSE와 같은 Buyer Identity를 다시 보여줘
             "같은 바이어가 이어서 반응하고 있다"는 연결감을 준다. 새 정보
             없이 market/profile 기존 값만 재사용. ---- */}
-        <BuyerIdentityCard market={market} profile={profile} accent={MARKET_ACCENT[market.id]} buyerType={buyer} />
+        <BuyerIdentityCard
+          market={market}
+          profile={profile}
+          accent={MARKET_ACCENT[market.id]}
+          buyerType={buyer}
+          variant="featured"
+        />
 
         {/* ---- 10단계: BUYER RESPONSE → BUYER'S NEXT MOVE 연결. 이 화면의
             선택지가 왜 이 3개인지(BUYER_NEXT_MOVE_OPTIONS[tier.level])를
@@ -3170,6 +3566,10 @@ function BuyerNextMoveScreen({ market, product, scores, selections, buyer, onSel
           BUYER INTEREST {interestScore} / 100 — HOW WILL YOU RESPOND?
         </p>
 
+        {/* ---- GLOBAL DESIGN UPGRADE: 라벨만 추가한 BUYER STATUS 블록.
+            interestScore/tier는 이미 위에서 계산된 값 그대로이며, 새 판정
+            로직을 추가하지 않는다. ---- */}
+        <span className="market-intel-grid__label">&#128202; BUYER STATUS</span>
         <span className={`mission-badge mission-badge--${tier.level}`}>
           {tier.icon} {tier.label}
         </span>
@@ -3216,8 +3616,16 @@ function BuyerNextMoveScreen({ market, product, scores, selections, buyer, onSel
 // 계약 결과를 짧게 보여주는 화면. 기존 .performance-screen/.performance-card
 // (미사용이던 클래스)와 .mission-badge/.reaction-panel/.mission-info/
 // .result-panel/.start-button을 재사용한다.
-function ContractOutcomeScreen({ market, product, contractResult, onContinue }) {
+function ContractOutcomeScreen({ market, product, contractResult, onContinue, scores, selections, buyer, budget }) {
   const { outcome, orderQuantity, rejectionReasons } = contractResult
+
+  // GLOBAL DESIGN UPGRADE: DEAL REPORT에 CONTRACT VALUE / ESTIMATED PROFIT /
+  // BUYER INTEREST를 보여주기 위해, FINAL RESULT가 이미 쓰고 있는 것과 완전히
+  // 동일한 함수(calculateBuyerInterest/calculateExportPerformance)를 동일한
+  // 인자로 한 번 더 호출할 뿐이다. 두 함수 모두 수정하지 않으며, 새 계산식을
+  // 추가하지 않는다 — 이미 검증된 계산을 이 화면에서도 표시용으로 재사용한다.
+  const buyerInterestScore = calculateBuyerInterest(scores, market, product, selections, buyer)
+  const exportPerformance = calculateExportPerformance(contractResult, buyerInterestScore, scores, product)
 
   const outcomeMeta = {
     success: { icon: '\u{1F7E2}', label: 'DEAL SUCCESSFUL', text: 'The buyer has accepted your offer.' },
@@ -3233,13 +3641,30 @@ function ContractOutcomeScreen({ market, product, contractResult, onContinue }) 
     },
   }[outcome]
 
+  // ---- GAME UI REDESIGN v2: 선택된 국가의 실제 배경 이미지를 시네마틱
+  // 배경으로 사용한다(순수 표시용, 게임 데이터/로직과 무관). ----
+  const countryHeroStyle = getCountryHeroStyle(market)
+
   return (
-    <div className="performance-screen">
+    <div className={`performance-screen${countryHeroStyle ? ' game-screen--country-bg' : ''}`} style={countryHeroStyle}>
+      <GlobalTradeHeader market={market} budget={budget} reputation={scores.trust} />
       <div className="screen__glow" aria-hidden="true" />
       <div className="screen__grid" aria-hidden="true" />
 
       <main className="performance-card">
-        <span className="price-step">CONTRACT OUTCOME</span>
+        {/* ---- GAME UI REDESIGN: SUCCESS 전용 콘페티 연출. 외부 라이브러리
+            없이 순수 CSS 애니메이션이며, 이미 계산된 outcome 문자열을
+            조건으로만 사용할 뿐 판정 로직에는 전혀 관여하지 않는다.
+            prefers-reduced-motion에서는 App.css에서 애니메이션을 끈다. ---- */}
+        {outcome === 'success' && (
+          <div className="confetti-burst" aria-hidden="true">
+            {CONFETTI_PIECE_INDEXES.map((i) => (
+              <span key={i} className="confetti-piece" />
+            ))}
+          </div>
+        )}
+
+        <span className="price-step">DEAL REPORT</span>
 
         <h1 className="price-title">CONTRACT OUTCOME</h1>
 
@@ -3253,11 +3678,26 @@ function ContractOutcomeScreen({ market, product, contractResult, onContinue }) 
           <p>{outcomeMeta.text}</p>
         </div>
 
+        {/* ---- STEP 2 (이미지 적용): CONTRACT OUTCOME에도 협상 상대(바이어)
+            캐릭터를 함께 보여준다. outcome 판정/데이터는 전혀 건드리지
+            않고, 이미 계산된 outcome 문자열을 CSS 클래스 이름으로만 다시
+            사용해(다른 화면의 mission-badge--success 등과 동일한 패턴)
+            결과에 맞는 은은한 색 강조만 추가한다. ---- */}
+        <div className={`contract-outcome-buyer contract-outcome-buyer--${outcome}`}>
+          <BuyerIdentityCard
+            market={market}
+            profile={MARKET_PROFILES[market.id]}
+            accent={MARKET_ACCENT[market.id]}
+            buyerType={buyer}
+            variant="featured"
+          />
+        </div>
+
         {outcome === 'success' && (
           <dl className="mission-info">
             <div className="mission-info__row">
               <dt>BUYER</dt>
-              <dd>{market.nameKo} 바이어</dd>
+              <dd>{buyer ? buyer.name : `${market.nameKo} 바이어`}</dd>
             </div>
             <div className="mission-info__row">
               <dt>PRODUCT</dt>
@@ -3274,9 +3714,29 @@ function ContractOutcomeScreen({ market, product, contractResult, onContinue }) 
           </dl>
         )}
 
+        {/* ---- GLOBAL DESIGN UPGRADE: DEAL REPORT 핵심 지표. exportPerformance
+            (이미 존재하는 calculateExportPerformance 결과)만 그대로 보여준다.
+            rejected일 때는 contractValue/estimatedProfit 대신 잠재 지표
+            (isPotential)를 그대로 표시해 FINAL RESULT와 동일한 의미를 갖게
+            한다. ---- */}
+        <dl className="mission-info">
+          <div className="mission-info__row">
+            <dt>{exportPerformance.isPotential ? 'POTENTIAL CONTRACT VALUE' : 'CONTRACT VALUE'}</dt>
+            <dd>&#8361;{exportPerformance.contractValue.toLocaleString()}</dd>
+          </div>
+          <div className="mission-info__row">
+            <dt>{exportPerformance.isPotential ? 'POTENTIAL PROFIT' : 'ESTIMATED PROFIT'}</dt>
+            <dd>&#8361;{exportPerformance.estimatedProfit.toLocaleString()}</dd>
+          </div>
+          <div className="mission-info__row">
+            <dt>BUYER INTEREST</dt>
+            <dd>{buyerInterestScore} / 100</dd>
+          </div>
+        </dl>
+
         {outcome === 'rejected' && rejectionReasons.length > 0 && (
           <section className="result-panel">
-            <span className="result-panel__badge">WHAT WENT WRONG</span>
+            <span className="result-panel__badge">WHAT HAPPENED</span>
             <div className="result-panel__desc">
               {rejectionReasons.map((reason) => (
                 <p key={reason.label}>&#9888; {reason.label} — {reason.text}</p>
@@ -3307,6 +3767,14 @@ function FinalResultScreen({ scores, market, product, selections, budget, initia
   const contractOutcome = contractResult ? contractResult.outcome : null
   const baseTotalScore = calculateFinalScore(scores, budget, initialBudget)
   const totalScore = contractOutcome ? applyContractOutcomeToScore(baseTotalScore, contractOutcome) : baseTotalScore
+  // ---- Request: 국가 공통 등급 판정. 이미 확정된 totalScore(계산 로직은
+  // 위 두 줄 그대로)를 getGrade()로 "번역"만 한다. 모든 국가가 이 하나의
+  // 함수를 그대로 재사용하므로 국가별 등급 로직은 존재하지 않는다. ----
+  const gradeResult = getGrade(totalScore)
+  // ---- Request: FINAL RESULT 요약(목표 판매량/사용한 의사결정 횟수)에
+  // 쓰는 missionBriefing. MissionScreen이 쓰는 getMissionBriefing(product)와
+  // 완전히 같은 소스이며 새 계산을 추가하지 않는다. ----
+  const missionBriefing = getMissionBriefing(product)
 
   // 8-3단계: EXPORT PERFORMANCE. BUYER INTEREST는 8-1의 calculateBuyerInterest를
   // 그대로 재사용(재계산 방식 변경 없음)하고, contractResult(8-2에서 이미 계산된
@@ -3339,13 +3807,18 @@ function FinalResultScreen({ scores, market, product, selections, budget, initia
   console.log('AI BUYER ANALYSIS DATA', buyerAnalysisData)
   console.log('AI BUYER PROMPT', buildBuyerPrompt(buyerAnalysisData))
 
+  // ---- GAME UI REDESIGN v2: 선택된 국가의 실제 배경 이미지를 시네마틱
+  // 배경으로 사용한다(순수 표시용, 게임 데이터/로직과 무관). ----
+  const countryHeroStyle = getCountryHeroStyle(market)
+
   return (
-    <div className="final-result-screen">
+    <div className={`final-result-screen${countryHeroStyle ? ' game-screen--country-bg' : ''}`} style={countryHeroStyle}>
+      <GlobalTradeHeader market={market} budget={budget} reputation={scores.trust} />
       <div className="screen__glow" aria-hidden="true" />
       <div className="screen__grid" aria-hidden="true" />
 
       <main className="final-result-card">
-        <span className="price-step">07 / 07</span>
+        <span className="price-step">FINAL TRADE REPORT &bull; 07 / 07</span>
 
         <h1 className="price-title">FINAL RESULT</h1>
 
@@ -3392,6 +3865,40 @@ function FinalResultScreen({ scores, market, product, selections, budget, initia
               </dd>
             </div>
           )}
+          {/* ---- Request: 모든 국가 공통 결과 요약 -- 바이어 이름·목표/최종
+              판매량·최종 점수·등급·사용한 의사결정 횟수를 같은 요약 목록에
+              추가한다. buyer.name, missionBriefing.targetSales,
+              exportPerformance.orderQuantity, totalScore, gradeResult.grade,
+              missionBriefing.totalRounds는 전부 이미 계산되어 있는 값을
+              그대로 보여줄 뿐, 새로운 판정/계산은 없다. ---- */}
+          {buyer && (
+            <div className="mission-info__row">
+              <dt>BUYER</dt>
+              <dd>{buyer.name}</dd>
+            </div>
+          )}
+          <div className="mission-info__row">
+            <dt>TARGET SALES</dt>
+            <dd>{missionBriefing.targetSales.toLocaleString()}개</dd>
+          </div>
+          {exportPerformance && (
+            <div className="mission-info__row">
+              <dt>{exportPerformance.isPotential ? 'POTENTIAL SALES' : 'FINAL SALES'}</dt>
+              <dd>{exportPerformance.orderQuantity.toLocaleString()}개</dd>
+            </div>
+          )}
+          <div className="mission-info__row">
+            <dt>FINAL SCORE</dt>
+            <dd>{totalScore}점</dd>
+          </div>
+          <div className="mission-info__row">
+            <dt>GRADE</dt>
+            <dd>{gradeResult.grade}</dd>
+          </div>
+          <div className="mission-info__row">
+            <dt>DECISIONS USED</dt>
+            <dd>{missionBriefing.totalRounds}회</dd>
+          </div>
         </dl>
 
         {/* ---- Lv2-8: PERFORMANCE BREAKDOWN. SCORE_LABELS/scores 값과 기존
@@ -3411,19 +3918,36 @@ function FinalResultScreen({ scores, market, product, selections, budget, initia
           ))}
         </div>
 
-        <div className={`total-score${contractOutcome ? ` total-score--${contractOutcome}` : ''}`}>
-          <span className="total-score__label">TOTAL SCORE</span>
-          <span className="total-score__value">
-            {totalScore}
-            <span className="total-score__max"> / 100</span>
-          </span>
-          {/* ---- Lv2-8: TOTAL SCORE 진행률 바. 기존 calculateFinalScore
-              결과(totalScore, 0~100)를 그대로 너비로만 쓸 뿐 점수 계산에는
-              전혀 관여하지 않는다. ---- */}
-          <div className="total-score__bar" role="presentation">
-            <div className="total-score__bar-fill" style={{ width: `${totalScore}%` }} />
+        <div className="final-score-row">
+          <div className={`total-score${contractOutcome ? ` total-score--${contractOutcome}` : ''}`}>
+            <span className="total-score__label">TOTAL SCORE</span>
+            <span className="total-score__value">
+              {totalScore}
+              <span className="total-score__max"> / 100</span>
+            </span>
+            {/* ---- Lv2-8: TOTAL SCORE 진행률 바. 기존 calculateFinalScore
+                결과(totalScore, 0~100)를 그대로 너비로만 쓸 뿐 점수 계산에는
+                전혀 관여하지 않는다. ---- */}
+            <div className="total-score__bar" role="presentation">
+              <div className="total-score__bar-fill" style={{ width: `${totalScore}%` }} />
+            </div>
+          </div>
+          {/* ---- GAME UI REDESIGN: 등급 배지. gradeResult는 위에서 이미
+              계산된 totalScore를 그대로 문자로 번역한 값이다(재계산 없음). ---- */}
+          <div className={`score-grade-badge score-grade-badge--${gradeResult.grade.toLowerCase()}`}>
+            <span className="score-grade-badge__label">GRADE</span>
+            <span className="score-grade-badge__letter">{gradeResult.grade}</span>
           </div>
         </div>
+
+        {/* ---- Request: 등급별 최종 결과(제목+설명). getGrade()가 totalScore
+            구간에 따라 고정 반환하는 문구이며, 모든 국가가 이 하나의
+            섹션/함수를 공유한다(국가별 분기 없음). ---- */}
+        <section className={`grade-result-panel grade-result-panel--${gradeResult.grade.toLowerCase()}`}>
+          <span className="grade-result-panel__badge">&#128203; RESULT</span>
+          <h2 className="grade-result-panel__title">{gradeResult.title}</h2>
+          <p className="grade-result-panel__description">{gradeResult.description}</p>
+        </section>
 
         <div className="final-result-layout">
         <div className="final-result-layout__left">
@@ -3547,6 +4071,7 @@ function FinalResultScreen({ scores, market, product, selections, budget, initia
               profile={MARKET_PROFILES[market.id]}
               accent={MARKET_ACCENT[market.id]}
               buyerType={buyer}
+              variant="featured"
             />
             <div className="reaction-panel">
               <span className="ai-feedback-panel__label">FINAL RESPONSE</span>
@@ -3985,6 +4510,8 @@ function App() {
         selectedMarket={selectedMarket}
         onSelect={handleMarketSelect}
         onNext={handleMarketNext}
+        budget={budget}
+        reputation={scores.trust}
       />
     )
   }
@@ -3996,6 +4523,8 @@ function App() {
         selectedProductId={selectedProductId}
         onNext={handleProductNext}
         onBack={handleBackToMarket}
+        budget={budget}
+        reputation={scores.trust}
       />
     )
   }
@@ -4025,6 +4554,8 @@ function App() {
         budget={budget}
         scores={scores}
         onNext={handleDecisionNext}
+        buyer={buyer}
+        selections={selections}
       />
     )
   }
@@ -4038,6 +4569,7 @@ function App() {
         selections={selections}
         buyer={buyer}
         onContinue={handleContinueFromBuyerResponse}
+        budget={budget}
       />
     )
   }
@@ -4051,6 +4583,7 @@ function App() {
         selections={selections}
         buyer={buyer}
         onSelect={handleBuyerNextMoveSelect}
+        budget={budget}
       />
     )
   }
@@ -4063,6 +4596,10 @@ function App() {
         contractResult={contractResult}
         buyerDecision={buyerDecision}
         onContinue={handleContinueFromContractOutcome}
+        scores={scores}
+        selections={selections}
+        buyer={buyer}
+        budget={budget}
       />
     )
   }
