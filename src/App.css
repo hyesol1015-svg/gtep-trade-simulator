@@ -1,18 +1,27 @@
 :root {
-  --bg-base: #F7F4EC;
-  --bg-card: #FFFFFF;
-  --color-primary: #2563EB;
-  --color-secondary: #7C3AED;
-  --color-accent: #F59E0B;
-  --color-success: #22C55E;
-  --color-warning: #F59E0B;
-  --color-danger: #EF4444;
-  --text-primary: #1E293B;
-  --text-muted: #64748B;
+  /* ---- GAME SCENE REDESIGN v3: 카드형 웹페이지 대신 "게임 화면" 느낌을
+     내기 위한 다크 글래스 테마. 게임 로직/데이터에는 전혀 관여하지 않는
+     순수 디자인 토큰이다. ---- */
+  --bg-base: #0B1220;
+  --bg-card: rgba(8, 13, 26, 0.6);
+  --color-primary: #38BDF8;
+  --color-secondary: #A78BFA;
+  --color-accent: #FBBF24;
+  --color-success: #4ADE80;
+  --color-warning: #FBBF24;
+  --color-danger: #F87171;
+  --text-primary: #F8FAFC;
+  --text-muted: #D8E1EE;
   --radius-card: 20px;
   --radius-chip: 999px;
-  --shadow-card: 0 12px 28px -8px rgba(30, 41, 59, 0.16);
-  --shadow-card-hover: 0 16px 32px -6px rgba(30, 41, 59, 0.22);
+  --shadow-card: 0 20px 60px -20px rgba(0, 0, 0, 0.6);
+  --shadow-card-hover: 0 26px 70px -16px rgba(0, 0, 0, 0.7);
+  --glass-bg: rgba(8, 13, 26, 0.6);
+  --glass-bg-strong: rgba(6, 10, 20, 0.78);
+  --panel-bg: rgba(8, 18, 38, 0.78);
+  --panel-bg-strong: rgba(5, 13, 28, 0.88);
+  --panel-border: rgba(180, 220, 255, 0.26);
+  --glass-border: rgba(255, 255, 255, 0.14);
 }
 
 .start-screen,
@@ -27,14 +36,23 @@
   min-height: 100svh;
   width: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  gap: 16px;
+  overflow-x: hidden;
+  overflow-y: visible;
   padding: 24px;
+  /* ---- GAME SCENE REDESIGN v3: 모든 화면이 이제 전체화면 이미지 배경
+     (country-bg/world-map/start-bg)을 갖는다. 이 fallback 그라디언트는
+     이미지가 없는 극히 예외적인 경우/전환 순간에만 보이며, 어두운 게임
+     톤으로 통일한다. color를 여기서 지정해 카드 밖 텍스트도 기본적으로
+     밝게 상속된다. ---- */
+  color: #F8FAFC;
   background:
-    radial-gradient(circle at 18% 20%, rgba(37, 99, 235, 0.07), transparent 45%),
-    radial-gradient(circle at 82% 78%, rgba(245, 158, 11, 0.06), transparent 50%),
-    linear-gradient(160deg, #FBF7EE 0%, #F5EFE1 55%, #F1E9D8 100%);
+    radial-gradient(circle at 18% 20%, rgba(56, 189, 248, 0.12), transparent 45%),
+    radial-gradient(circle at 82% 78%, rgba(251, 191, 36, 0.09), transparent 50%),
+    linear-gradient(160deg, #0B1220 0%, #0D1626 55%, #0A0F1C 100%);
 }
 
 .screen__glow {
@@ -53,21 +71,203 @@
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(30, 41, 59, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(30, 41, 59, 0.06) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
   background-size: 42px 42px;
   mask-image: radial-gradient(circle at 50% 40%, black 0%, transparent 75%);
   pointer-events: none;
   z-index: 0;
 }
 
+/* ================================================================
+   GLOBAL DESIGN UPGRADE: GLOBAL TRADE COMMAND CENTER
+   Visual-only additions for the trade/negotiation-simulation redesign.
+   Nothing here changes game state, calculations or screen transitions --
+   nothing in this block, or the components that use these classes,
+   reads or writes scores/budget/selections beyond displaying values
+   already computed elsewhere. ================================================================ */
+
+.gts-header {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 1120px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  padding: 12px 20px;
+  border-radius: 14px;
+  background: var(--bg-card);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 20px -12px rgba(30, 41, 59, 0.22);
+  animation: screen-in 0.35s ease both;
+}
+
+.gts-header__brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+
+.gts-header__title {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--text-primary);
+}
+
+.gts-header__season {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-primary);
+}
+
+.gts-header__hud {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.gts-header__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  min-width: 64px;
+}
+
+.gts-header__stat-label {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+}
+
+.gts-header__stat-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.gts-header__stat-flag {
+  width: 16px;
+  height: 11px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .gts-header {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .gts-header__brand {
+    align-items: center;
+    text-align: center;
+    width: 100%;
+  }
+
+  .gts-header__hud {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .gts-header__stat {
+    align-items: center;
+  }
+}
+
+/* ---- MARKET SELECT: MARKET INTELLIGENCE panel (reuses .result-panel's
+   card chrome; only the inner grid below is new). ---- */
+.market-intel-grid {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(37, 99, 235, 0.18);
+}
+
+.market-intel-panel__label,
+.market-intel-grid__label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--color-primary);
+}
+
+.market-intel-grid__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.market-intel-grid__label {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  font-size: 10.5px;
+}
+
+.buyer-card .market-intel-grid__label {
+  display: inline-flex;
+  color: #D8E1EE;
+  font-size: 11.5px;
+  background: var(--panel-bg-strong);
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  padding: 6px 14px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.market-intel-grid__value {
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: right;
+}
+
+/* ---- PRODUCT SELECT: EXPORT VALUE badge + TRADE FIT tag-row label
+   (opt-in fields on ChoiceCard's option object; no effect on the strategy
+   round cards, which never set them). ---- */
+.choice-card__value-badge {
+  align-self: flex-start;
+  width: fit-content;
+  margin-bottom: 2px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #0F766E;
+  background: rgba(13, 148, 136, 0.1);
+  border: 1px solid rgba(13, 148, 136, 0.28);
+}
+
+.choice-card__tags-label {
+  width: 100%;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+
 .start-card,
-.mission-card,
 .market-card,
 .product-card,
-.decision-card,
 .performance-card,
-.buyer-card,
 .final-result-card {
   position: relative;
   z-index: 1;
@@ -79,30 +279,329 @@
   gap: clamp(16px, 3vw, 22px);
   padding: clamp(32px, 6vw, 48px) clamp(24px, 5vw, 40px);
   border-radius: 24px;
-  background: #FFFFFF;
-  border: 1px solid rgba(30, 41, 59, 0.08);
+  color: #F8FAFC;
+  background: rgba(8, 13, 26, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow:
-    0 20px 45px -20px rgba(30, 41, 59, 0.18),
-    0 1px 0 rgba(255, 255, 255, 0.6) inset;
-  backdrop-filter: none;
+    0 24px 60px -20px rgba(0, 0, 0, 0.65),
+    0 1px 0 rgba(255, 255, 255, 0.08) inset;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   animation: screen-in 0.35s ease both;
 }
 
 .start-card {
-  max-width: 480px;
-}
-
-.mission-card {
-  max-width: 480px;
+  max-width: 520px;
 }
 
 .market-card,
 .product-card,
-.decision-card,
 .performance-card,
-.buyer-card,
 .final-result-card {
-  max-width: 560px;
+  max-width: 720px;
+}
+
+/* ---- Request: SELECT MARKET을 다른 화면과 같은 진한 다크 네이비
+   글래스 패널 언어로 통일한다. 레이아웃/기능/구조는 그대로, 배경
+   불투명도와 테두리 톤만 강화한다. ---- */
+.market-card {
+  background: var(--panel-bg-strong);
+  border-color: var(--panel-border);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.35),
+    0 1px 0 rgba(255, 255, 255, 0.08) inset;
+}
+
+/* ---- FLOATING SCENE LAYOUT: MISSION / NEGOTIATION(TURN) / BUYER
+   screens no longer sit inside one big enclosing card. These three
+   wrappers are transparent layout containers only -- no background,
+   border, shadow or blur -- so the full-bleed country background shows
+   through everywhere, and each piece of content (title, buyer
+   character, HUD chips, dialogue bubbles) floats independently on top
+   of it. Layout/data flow is unchanged. ---- */
+.mission-card,
+.decision-card,
+.buyer-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: clamp(16px, 3vw, 22px);
+  padding: clamp(24px, 5vw, 40px) clamp(16px, 5vw, 40px);
+  animation: screen-in 0.35s ease both;
+}
+
+/* ---- GAME SCENE REDESIGN v3: NEGOTIATION 화면 전용 무대 레이아웃.
+   장식용 사이드바(.negotiation-sidebar)와 기존 .decision-layout을 함께
+   담는다. 모바일에서는 세로로 쌓이고, 데스크톱(1200px+)에서는 사이드바가
+   왼쪽 고정폭 컬럼이 된다. 기존 .decision-layout/__left/__right 구조와
+   내부 컴포넌트/핸들러는 전혀 건드리지 않는다. ---- */
+.decision-stage {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.negotiation-sidebar {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(6, 10, 20, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 14px 34px -18px rgba(0, 0, 0, 0.6);
+}
+
+.negotiation-sidebar__title {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: #D8E1EE;
+}
+
+.negotiation-sidebar__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.negotiation-sidebar__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #D8E1EE;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  white-space: nowrap;
+}
+
+.negotiation-sidebar__item--active {
+  color: #F8FAFC;
+  background: var(--market-accent-tint, rgba(56, 189, 248, 0.16));
+  border-color: var(--market-accent-border, rgba(56, 189, 248, 0.4));
+  box-shadow: 0 0 0 1px var(--market-accent-border, rgba(56, 189, 248, 0.35)) inset;
+}
+
+.negotiation-sidebar__icon {
+  font-size: 13px;
+  line-height: 1;
+}
+
+/* ---- GAME SCENE REDESIGN v3: NEGOTIATION 화면을 실제 채팅처럼 보여주는
+   말풍선 UI. 텍스트는 전부 기존 round.prompt/selectedOption.title
+   데이터이며, 새 대사를 지어내지 않는다. 바이어 말풍선은 왼쪽 정렬 +
+   밝은 유리 표면, 플레이어 말풍선은 오른쪽 정렬 + 브랜드 블루로 실제
+   채팅 UI 컨벤션을 따른다. ---- */
+.negotiation-dialogue {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ---- Request: big, tailed speech bubbles (420-600px wide, 24-32px
+   padding, 18-24px text, 1.6 line-height, 20-28px radius) instead of
+   the small ~14px chat-message strip this used to be. The tail is a
+   clip-path triangle on ::after pointing back up toward the buyer
+   character rendered just above this dialogue. ---- */
+.negotiation-dialogue__bubble {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  max-width: min(100%, 420px);
+  min-width: 0;
+  animation: dialogue-bubble-in 0.32s ease both;
+}
+
+.negotiation-dialogue__bubble--buyer {
+  align-self: flex-start;
+}
+
+.negotiation-dialogue__bubble--player {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+  animation-delay: 0.08s;
+}
+
+.negotiation-dialogue__avatar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 6px;
+}
+
+.negotiation-dialogue__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.negotiation-dialogue__content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 20px;
+  text-align: left;
+}
+
+.negotiation-dialogue__bubble--buyer .negotiation-dialogue__content {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-bottom-left-radius: 8px;
+  color: #0F172A;
+  box-shadow: 0 15px 35px -12px rgba(15, 23, 42, 0.35);
+}
+
+.negotiation-dialogue__bubble--buyer .negotiation-dialogue__content::after {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 30px;
+  width: 22px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.95);
+  border-left: 1px solid rgba(226, 232, 240, 0.9);
+  border-top: 1px solid rgba(226, 232, 240, 0.9);
+  clip-path: polygon(0% 100%, 100% 100%, 28% 0%);
+}
+
+.negotiation-dialogue__bubble--buyer .negotiation-dialogue__name {
+  color: #1E3A8A;
+}
+
+.negotiation-dialogue__bubble--buyer .negotiation-dialogue__role {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #64748B;
+}
+
+.negotiation-dialogue__bubble--buyer .negotiation-dialogue__text {
+  color: #0F172A;
+  font-weight: 700;
+}
+
+.negotiation-dialogue__bubble--player .negotiation-dialogue__content {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.88) 0%, rgba(29, 78, 216, 0.88) 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(147, 197, 253, 0.45);
+  border-bottom-right-radius: 8px;
+  color: #FFFFFF;
+  text-align: right;
+  box-shadow: 0 15px 35px -12px rgba(37, 99, 235, 0.5);
+}
+
+.negotiation-dialogue__bubble--player .negotiation-dialogue__content::after {
+  content: "";
+  position: absolute;
+  top: -10px;
+  right: 30px;
+  width: 22px;
+  height: 22px;
+  background: rgba(29, 78, 216, 0.88);
+  border-right: 1px solid rgba(147, 197, 253, 0.45);
+  border-top: 1px solid rgba(147, 197, 253, 0.45);
+  clip-path: polygon(100% 100%, 0% 100%, 72% 0%);
+}
+
+.negotiation-dialogue__bubble--player .negotiation-dialogue__name {
+  color: rgba(255, 255, 255, 0.85);
+  text-align: right;
+  font-weight: 800;
+}
+
+.negotiation-dialogue__bubble--player .negotiation-dialogue__text {
+  color: #FFFFFF;
+}
+
+.negotiation-dialogue__name {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.negotiation-dialogue__text {
+  font-size: clamp(13.5px, 1.1vw, 15.5px);
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+@media (max-width: 480px) {
+  .negotiation-dialogue__content {
+    padding: 18px 20px;
+  }
+
+  .negotiation-dialogue__text {
+    font-size: 16px;
+  }
+}
+
+@keyframes dialogue-bubble-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (min-width: 1200px) {
+  .decision-stage {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .negotiation-sidebar {
+    flex: 0 0 168px;
+    position: sticky;
+    top: 20px;
+  }
+
+  .negotiation-sidebar__list {
+    flex-direction: column;
+  }
+
+  .decision-stage > .decision-layout {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
 }
 
 @keyframes screen-in {
@@ -174,18 +673,19 @@
   margin: 0;
   font-size: clamp(14px, 3.4vw, 16px);
   line-height: 1.6;
-  color: #64748B;
+  color: #D8E1EE;
 }
 
 .mission-badge {
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.42em;
-  color: #D97706;
+  color: #FBBF24;
   padding: 6px 14px;
-  border: 1px solid rgba(251, 191, 36, 0.35);
+  border: 1px solid rgba(251, 191, 36, 0.4);
   border-radius: 999px;
-  background: rgba(251, 191, 36, 0.08);
+  background: rgba(8, 20, 40, 0.75);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
 .ai-feedback-panel {
@@ -214,7 +714,7 @@
   font-size: 13px;
   line-height: 1.6;
   font-style: italic;
-  color: #64748B;
+  color: #D8E1EE;
 }
 
 .ai-feedback-panel__section {
@@ -272,7 +772,7 @@
   justify-content: center;
   border-radius: 999px;
   font-size: 11px;
-  background: rgba(30, 41, 59, 0.08);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .ai-feedback-panel__item-text {
@@ -280,7 +780,7 @@
 }
 
 .ai-feedback-panel__item-text strong {
-  color: #1E293B;
+  color: #F8FAFC;
 }
 
 /* ---- Phase 5: BUYER'S NEXT MOVE의 action card 위 작은 섹션 라벨. ---- */
@@ -290,7 +790,8 @@
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.2em;
-  color: #64748B;
+  color: #D8E1EE;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85), 0 1px 3px rgba(0, 0, 0, 0.9);
 }
 
 .mission-title {
@@ -303,7 +804,7 @@
   font-weight: 800;
   letter-spacing: 0.02em;
   line-height: 1.25;
-  color: #1E293B;
+  color: #F8FAFC;
 }
 
 .mission-title__flag {
@@ -361,7 +862,7 @@
 .buyer-identity__name {
   font-size: 15px;
   font-weight: 800;
-  color: #1E293B;
+  color: #F8FAFC;
 }
 
 .buyer-identity__role {
@@ -371,11 +872,19 @@
   color: var(--market-accent, #2563EB);
 }
 
+/* ---- GAME UI REDESIGN v2: 실제 MARKET_ONLINE_PLATFORMS 플랫폼명을 보여주는
+   "회사" 라인(featured 카드 전용, 새 회사명 없음). ---- */
+.buyer-identity__company {
+  font-size: 11px;
+  font-weight: 600;
+  color: #D8E1EE;
+}
+
 .buyer-identity__intro {
   margin-top: 2px;
   font-size: 12.5px;
   line-height: 1.5;
-  color: #64748B;
+  color: #D8E1EE;
 }
 
 /* ---- Phase 8: Buyer Identity 안에 들어가는 CONCEPT 배지. 기존
@@ -399,7 +908,7 @@
   margin: 0;
   font-size: clamp(14px, 3.4vw, 16px);
   line-height: 1.6;
-  color: #64748B;
+  color: #D8E1EE;
 }
 
 .mission-info {
@@ -410,8 +919,8 @@
   gap: 10px;
   padding: 16px 18px;
   border-radius: 16px;
-  background: rgba(30, 41, 59, 0.05);
-  border: 1px solid rgba(30, 41, 59, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.14);
 }
 
 /* ---- Phase 2: MISSION 화면(.mission-card)의 mission-info만 카드형 그리드로.
@@ -452,7 +961,7 @@
   margin: 0;
   font-size: 14px;
   line-height: 1.6;
-  color: #1E293B;
+  color: #F8FAFC;
 }
 
 .mission-objective__targets {
@@ -467,10 +976,10 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 10px 6px;
-  border-radius: 12px;
-  background: rgba(251, 191, 36, 0.08);
-  border: 1px solid rgba(251, 191, 36, 0.2);
+  padding: 6px 4px;
+  border-radius: 0;
+  background: none;
+  border: none;
 }
 
 .mission-objective__target-label {
@@ -483,7 +992,7 @@
 .mission-objective__target-value {
   font-size: 14px;
   font-weight: 800;
-  color: #1E293B;
+  color: #F8FAFC;
 }
 
 /* 턴별 결정 화면에서 쓰는 컴팩트 버전 — targets 그리드 없이 배지+문구만.
@@ -505,10 +1014,11 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 14px 18px;
-  border-radius: 16px;
-  background: rgba(30, 41, 59, 0.05);
-  border: 1px solid rgba(30, 41, 59, 0.14);
+  padding: 6px 0 0;
+  border-radius: 0;
+  background: none;
+  border: none;
+  border-top: 1px solid rgba(180, 220, 255, 0.16);
 }
 
 .online-platform-panel__label {
@@ -564,7 +1074,7 @@
   margin: 0;
   font-size: 15px;
   font-weight: 700;
-  color: #1E293B;
+  color: #F8FAFC;
 }
 
 .mission-card .mission-info__row {
@@ -573,8 +1083,8 @@
   gap: 4px;
   padding: 10px 12px;
   border-radius: 12px;
-  background: rgba(30, 41, 59, 0.05);
-  border: 1px solid rgba(30, 41, 59, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   text-align: left;
 }
 
@@ -589,11 +1099,59 @@
   font-weight: 800;
 }
 
+/* ---- Request: FINAL RESULT 화면 상단 MARKET/PRODUCT/CONTRACT STATUS
+   요약(.final-result-card 바로 아래의 .mission-info)이 배경 사진 위에
+   거의 안 보이는 대비로 떠 있고, 좌우 끝까지 늘어난 justify-content:
+   space-between 때문에 라벨 3개가 왼쪽에, 값 3개가 오른쪽에 따로 몰려
+   보여 서로 짝이 안 맞는 것처럼 보였다. 다른 화면과 같은 다크 글래스
+   패널을 입히고, 라벨 위/값 아래로 나란히 놓는 3열 그리드로 바꿔 각
+   항목이 한 덩어리로 보이게 한다. MISSION/NEGOTIATION/FINAL RESULT
+   본문에서 쓰는 다른 .mission-info 인스턴스는 그대로 둔다. ---- */
+.final-result-card > .mission-info {
+  background: var(--panel-bg-strong, rgba(5, 13, 28, 0.88));
+  border: 1px solid var(--panel-border, rgba(180, 220, 255, 0.26));
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px 32px;
+}
+
+.final-result-card > .mission-info .mission-info__row {
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 0 1 auto;
+}
+
+.final-result-card > .mission-info .mission-info__row dt {
+  font-size: 11px;
+}
+
+.final-result-card > .mission-info .mission-info__row dd {
+  font-size: 15px;
+  text-align: center;
+}
+
 .price-step {
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.3em;
-  color: #64748B;
+  color: #D8E1EE;
+}
+
+/* ---- Request: the country background photos carry their own baked-in
+   title art (e.g. "UZBEKISTAN / THE HEART OF THE SILK ROAD") which can
+   sit directly behind this step header on some screens (NEGOTIATION in
+   particular) now that the overlay is much lighter. A text-shadow (the
+   same technique already used for the START screen title) keeps the
+   real UI heading legible without adding another background box. ---- */
+.game-screen--country-bg .price-step,
+.game-screen--country-bg .price-title,
+.game-screen--country-bg .price-lead {
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85), 0 1px 3px rgba(0, 0, 0, 0.9);
 }
 
 .price-title {
@@ -601,21 +1159,32 @@
   font-size: clamp(24px, 5.5vw, 32px);
   font-weight: 800;
   letter-spacing: 0.02em;
-  color: #1E293B;
+  color: #F8FAFC;
 }
 
 .price-lead {
   margin: 0;
   font-size: clamp(14px, 3.4vw, 16px);
   line-height: 1.6;
-  color: #64748B;
+  color: #D8E1EE;
+}
+
+.buyer-card .price-lead {
+  font-size: clamp(15px, 3.6vw, 17px);
+  font-weight: 700;
+  color: #F8FAFC;
+  background: var(--panel-bg-strong);
+  border: 1px solid var(--panel-border);
+  border-radius: 14px;
+  padding: 10px 20px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
 .price-question {
   margin: 0;
   font-size: clamp(16px, 3.8vw, 18px);
   font-weight: 700;
-  color: #1E293B;
+  color: #F8FAFC;
 }
 
 .choice-list {
@@ -632,8 +1201,10 @@
   width: 100%;
   padding: 16px 18px;
   border-radius: 16px;
-  background: rgba(30, 41, 59, 0.05);
-  border: 1px solid rgba(30, 41, 59, 0.14);
+  background: rgba(8, 13, 26, 0.42);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   color: inherit;
   font: inherit;
   text-align: left;
@@ -761,12 +1332,12 @@
 .choice-card__title {
   font-size: 15px;
   font-weight: 700;
-  color: #1E293B;
+  color: #F8FAFC;
 }
 
 .choice-card__subtitle {
   font-size: 13px;
-  color: #64748B;
+  color: #D8E1EE;
 }
 
 .choice-card__breakdown {
@@ -784,7 +1355,7 @@
   justify-content: space-between;
   gap: 10px;
   font-size: 13px;
-  color: #64748B;
+  color: #D8E1EE;
 }
 
 .choice-card__breakdown li span:first-child {
@@ -859,8 +1430,8 @@
   letter-spacing: 0.02em;
   white-space: nowrap;
   color: #475569;
-  background: rgba(30, 41, 59, 0.06);
-  border: 1px solid rgba(30, 41, 59, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
 }
 
 .choice-card__tag--good {
@@ -900,7 +1471,7 @@
   margin: 0;
   font-size: 17px;
   font-weight: 800;
-  color: #1E293B;
+  color: #F8FAFC;
 }
 
 .result-panel__desc {
@@ -913,7 +1484,7 @@
   margin: 0;
   font-size: 13px;
   line-height: 1.6;
-  color: #64748B;
+  color: #D8E1EE;
 }
 
 .result-panel__scores {
@@ -932,7 +1503,7 @@
   justify-content: space-between;
   font-size: 14px;
   font-weight: 700;
-  color: #1E293B;
+  color: #F8FAFC;
 }
 
 .result-panel__delta--up {
@@ -992,7 +1563,7 @@
 
 /* ---- 11단계: BACK 버튼. 메인 CTA(.start-button)보다 작고 조용한 보조
    버튼으로, 각 카드의 맨 위에 왼쪽 정렬로 배치된다. 색상 토큰(테두리/배경
-   rgba(30, 41, 59, ...), 텍스트 #9fb0cc)은 다른 화면의 보조 요소와
+   rgba(255, 255, 255, ...), 텍스트 #9fb0cc)은 다른 화면의 보조 요소와
    동일한 것을 재사용한다. */
 .back-button {
   align-self: flex-start;
@@ -1003,9 +1574,9 @@
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.06em;
-  color: #64748B;
-  background: rgba(30, 41, 59, 0.04);
-  border: 1px solid rgba(30, 41, 59, 0.16);
+  color: #D8E1EE;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 999px;
   cursor: pointer;
   transition:
@@ -1017,9 +1588,9 @@
 
 @media (hover: hover) and (pointer: fine) {
   .back-button:hover {
-    color: #1E293B;
-    border-color: rgba(30, 41, 59, 0.32);
-    background: rgba(30, 41, 59, 0.08);
+    color: #F8FAFC;
+    border-color: rgba(255, 255, 255, 0.32);
+    background: rgba(255, 255, 255, 0.08);
     transform: translateX(-2px);
   }
 }
@@ -1046,10 +1617,11 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 14px 8px;
-  border-radius: 14px;
-  background: rgba(30, 41, 59, 0.05);
-  border: 1px solid rgba(30, 41, 59, 0.14);
+  padding: 10px 8px;
+  border-radius: 0;
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(180, 220, 255, 0.16);
   text-align: center;
 }
 
@@ -1063,7 +1635,7 @@
 .stat-card__value {
   font-size: clamp(15px, 4vw, 18px);
   font-weight: 800;
-  color: #1E293B;
+  color: #F8FAFC;
 }
 
 .stat-card--highlight {
@@ -1077,7 +1649,7 @@
   height: 6px;
   margin-top: 2px;
   border-radius: 999px;
-  background: rgba(30, 41, 59, 0.12);
+  background: rgba(255, 255, 255, 0.12);
   overflow: hidden;
 }
 
@@ -1095,16 +1667,21 @@
   gap: 6px;
   padding: 14px 16px;
   border-radius: 14px;
-  background: rgba(30, 41, 59, 0.05);
-  border: 1px solid rgba(30, 41, 59, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   text-align: left;
+}
+
+.buyer-card .reaction-panel {
+  background: var(--panel-bg-strong);
+  border-color: var(--panel-border);
 }
 
 .reaction-panel p {
   margin: 0;
   font-size: 13px;
   line-height: 1.6;
-  color: #64748B;
+  color: #D8E1EE;
 }
 
 .total-score {
@@ -1162,7 +1739,7 @@
 .total-score__max {
   font-size: clamp(16px, 4vw, 20px);
   font-weight: 700;
-  color: #64748B;
+  color: #D8E1EE;
 }
 
 /* ---- Phase 5: BUYER INTEREST 숫자를 tier(기존 getBuyerInterestMessage의
@@ -1304,8 +1881,8 @@
   gap: 12px;
   padding: 16px 18px;
   border-radius: 16px;
-  background: rgba(30, 41, 59, 0.05);
-  border: 1px solid rgba(30, 41, 59, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   text-align: left;
 }
 
@@ -1326,7 +1903,7 @@
   font-size: 14px;
   font-weight: 700;
   line-height: 1.5;
-  color: #1E293B;
+  color: #F8FAFC;
 }
 
 @media (max-width: 480px) {
@@ -1380,9 +1957,10 @@
   text-align: center;
   gap: 6px;
   padding: 20px 14px 16px;
-  border-radius: 16px;
-  background: rgba(30, 41, 59, 0.05);
-  border: 1px solid rgba(30, 41, 59, 0.14);
+  border-radius: 20px;
+  background: rgba(10, 25, 48, 0.8);
+  border: 1px solid rgba(180, 210, 255, 0.2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   color: inherit;
   font: inherit;
   cursor: pointer;
@@ -1420,10 +1998,13 @@
 
 @media (hover: hover) and (pointer: fine) {
   .market-option:hover {
-    border-color: rgba(37, 99, 235, 0.5);
+    border-color: var(--market-accent, rgba(37, 99, 235, 0.5));
     background: rgba(37, 99, 235, 0.08);
-    transform: translateY(-2px);
-    box-shadow: 0 10px 24px -14px rgba(37, 99, 235, 0.55);
+    transform: translateY(-4px) scale(1.03);
+    box-shadow:
+      0 14px 30px -14px rgba(37, 99, 235, 0.55),
+      0 0 0 1px var(--market-accent-border, rgba(37, 99, 235, 0.35)),
+      0 0 28px -6px var(--market-accent-tint, rgba(37, 99, 235, 0.4));
   }
 }
 
@@ -1441,11 +2022,12 @@
    느껴지도록 통일한다. 이 카드의 기존 정지 상태 transform(scale(1.02))에
    맞춘 전용 pop 애니메이션만 추가했다 — 선택 판정 로직은 변경하지 않음. */
 .market-option--selected {
-  border-color: rgba(37, 99, 235, 0.9);
-  background: rgba(37, 99, 235, 0.07);
+  border-color: rgba(125, 211, 252, 0.9);
+  background: rgba(37, 99, 235, 0.22);
   box-shadow:
-    0 0 0 1px rgba(37, 99, 235, 0.35) inset,
-    0 10px 22px -10px rgba(37, 99, 235, 0.35);
+    0 0 0 1px rgba(125, 211, 252, 0.45) inset,
+    0 0 24px rgba(56, 189, 248, 0.35),
+    0 10px 22px -10px rgba(37, 99, 235, 0.45);
   transform: scale(1.02);
   animation: market-select-pop 0.28s ease;
 }
@@ -1490,19 +2072,19 @@
   font-size: 14px;
   font-weight: 800;
   letter-spacing: 0.03em;
-  color: #1E293B;
+  color: #F8FAFC;
 }
 
 .market-option__name-ko {
   font-size: 12px;
-  font-weight: 600;
-  color: #2563EB;
+  font-weight: 700;
+  color: #93C5FD;
 }
 
 .market-option__desc {
   font-size: 11.5px;
   line-height: 1.5;
-  color: #64748B;
+  color: #D8E1EE;
 }
 
 /* ---- Phase 4: MARKET SELECT 카드와 PRODUCT SELECT 헤더가 함께 쓰는
@@ -1566,8 +2148,8 @@
   gap: 8px;
   padding: 10px 14px;
   border-radius: 12px;
-  background: rgba(30, 41, 59, 0.04);
-  border: 1px solid rgba(30, 41, 59, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.03em;
@@ -1577,7 +2159,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  color: #1E293B;
+  color: #F8FAFC;
 }
 
 .mission-hud__info-flag {
@@ -1612,7 +2194,7 @@
 @keyframes stat-pulse {
   0% {
     box-shadow: 0 0 0 0 rgba(251, 191, 36, 0);
-    border-color: rgba(30, 41, 59, 0.14);
+    border-color: rgba(255, 255, 255, 0.14);
   }
   30% {
     box-shadow: 0 0 0 6px rgba(251, 191, 36, 0.16);
@@ -1621,7 +2203,7 @@
   }
   100% {
     box-shadow: 0 0 0 0 rgba(251, 191, 36, 0);
-    border-color: rgba(30, 41, 59, 0.14);
+    border-color: rgba(255, 255, 255, 0.14);
     transform: scale(1);
   }
 }
@@ -1645,8 +2227,8 @@
   font-size: 13px;
   font-weight: 800;
   color: #64748b;
-  background: rgba(30, 41, 59, 0.06);
-  border: 1px solid rgba(30, 41, 59, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
@@ -1680,8 +2262,8 @@
   gap: 6px;
   padding: 12px 16px;
   border-radius: 14px;
-  background: rgba(30, 41, 59, 0.05);
-  border: 1px solid rgba(30, 41, 59, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.14);
 }
 
 .mission-hud__turn-label {
@@ -1706,6 +2288,7 @@
   gap: 8px;
   padding: 16px 18px;
   border-radius: 14px;
+  color: #1E293B;
   background: #FFFFFF;
   border: 1px solid rgba(37, 99, 235, 0.35);
   box-shadow: 0 12px 24px -14px rgba(30, 41, 59, 0.22);
@@ -1800,8 +2383,8 @@
   gap: 10px;
   padding: 16px 18px;
   border-radius: 16px;
-  background: rgba(30, 41, 59, 0.05);
-  border: 1px solid rgba(30, 41, 59, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   animation: start-fade-in 0.5s ease both;
 }
 
@@ -1829,7 +2412,7 @@
   margin: 0;
   font-size: 14px;
   line-height: 1.6;
-  color: #1E293B;
+  color: #F8FAFC;
   text-align: center;
 }
 
@@ -1847,12 +2430,12 @@
   gap: 6px;
   padding: 10px 8px;
   border-radius: 12px;
-  background: rgba(30, 41, 59, 0.06);
-  border: 1px solid rgba(30, 41, 59, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.03em;
-  color: #1E293B;
+  color: #F8FAFC;
   text-align: center;
 }
 
@@ -1874,7 +2457,7 @@
 .start-budget__value {
   font-size: clamp(20px, 5vw, 26px);
   font-weight: 800;
-  color: #1E293B;
+  color: #F8FAFC;
 }
 
 .start-game-button {
@@ -2003,8 +2586,8 @@
   width: 100%;
   height: 14px;
   border-radius: 999px;
-  background: rgba(30, 41, 59, 0.1);
-  border: 1px solid rgba(30, 41, 59, 0.12);
+  background: rgba(5, 13, 28, 0.75);
+  border: 1px solid var(--panel-border);
   overflow: hidden;
   animation: turn-fade-in 0.35s ease 0.25s both;
 }
@@ -2072,6 +2655,23 @@
   width: 100%;
 }
 
+.buyer-response-card .reaction-panel,
+.buyer-response-card .mission-info.buyer-profile-info {
+  background: none;
+  border: none;
+  padding: 4px 0;
+}
+
+.buyer-response-card .mission-info.buyer-profile-info {
+  max-width: 460px;
+  margin: 0 auto;
+}
+
+.buyer-response-card .mission-info.buyer-profile-info .mission-info__row {
+  border-bottom: 1px solid rgba(180, 220, 255, 0.16);
+  padding: 6px 2px;
+}
+
 /* ---- 7. BUYER'S NEXT MOVE: 카드형 액션 선택지 ---- */
 .buyer-move-card {
   display: flex;
@@ -2081,11 +2681,11 @@
   width: 100%;
   padding: 15px 20px;
   border-radius: 14px;
-  background: rgba(30, 41, 59, 0.05);
-  border: 1px solid rgba(30, 41, 59, 0.16);
-  color: #1E293B;
+  background: var(--panel-bg-strong);
+  border: 1px solid var(--panel-border);
+  color: #F8FAFC;
   font: inherit;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 800;
   letter-spacing: 0.04em;
   text-align: left;
@@ -2187,27 +2787,27 @@
    기존 판정 그대로)를 BUYER RESPONSE/BUYER'S NEXT MOVE의 mission-badge에도
    같은 색 체계로 입혀 "관심도가 높을수록 긍정적, 낮을수록 경고" 느낌을 준다. ---- */
 .mission-badge--high {
-  color: #16A34A;
-  border-color: rgba(74, 222, 128, 0.4);
-  background: rgba(74, 222, 128, 0.1);
+  color: #4ADE80;
+  border-color: rgba(74, 222, 128, 0.45);
+  background: rgba(6, 20, 14, 0.82);
 }
 
 .mission-badge--moderate {
-  color: #D97706;
-  border-color: rgba(251, 191, 36, 0.4);
-  background: rgba(251, 191, 36, 0.1);
+  color: #FBBF24;
+  border-color: rgba(251, 191, 36, 0.45);
+  background: rgba(24, 16, 4, 0.82);
 }
 
 .mission-badge--low {
-  color: #EA580C;
-  border-color: rgba(251, 146, 60, 0.4);
-  background: rgba(251, 146, 60, 0.1);
+  color: #FB923C;
+  border-color: rgba(251, 146, 60, 0.45);
+  background: rgba(26, 14, 4, 0.82);
 }
 
 .mission-badge--verylow {
-  color: #DC2626;
-  border-color: rgba(248, 113, 113, 0.4);
-  background: rgba(248, 113, 113, 0.1);
+  color: #F87171;
+  border-color: rgba(248, 113, 113, 0.45);
+  background: rgba(26, 6, 6, 0.82);
 }
 
 .performance-card .mission-badge {
@@ -2317,7 +2917,7 @@
   left: 8%;
   right: 8%;
   height: 1px;
-  background: rgba(30, 41, 59, 0.12);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 
@@ -2336,6 +2936,275 @@
   gap: clamp(16px, 3vw, 22px);
 }
 
+/* ---- REFERENCE LAYOUT PASS: NEGOTIATION-only game scene grid, matching
+   the user's reference image (big character left, dialogue + MISSION
+   OBJECTIVE top-right, STRATEGY OPTIONS + CONFIRM STRATEGY across the
+   bottom). Mobile-first: everything stacks in one column in the order
+   character -> buyer interest -> dialogue -> objective -> strategy ->
+   confirm, then becomes a two-column scene at 1200px+. No game logic,
+   only the .decision-card DOM's own layout classes. ---- */
+.decision-scene {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.decision-scene__character-col {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.decision-scene__right-col {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.decision-scene__dialogue-row {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.decision-scene__bottom {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.choice-list--row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 1200px) {
+  .decision-scene {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 24px;
+  }
+
+  .decision-scene__character-col {
+    flex: 0 0 300px;
+    width: 300px;
+  }
+
+  .decision-scene__right-col {
+    flex: 1 1 auto;
+  }
+
+  .decision-scene__dialogue-row {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .decision-scene__dialogue-row > .negotiation-dialogue {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .choice-list--row {
+    flex-direction: row;
+    gap: 14px;
+  }
+
+  .choice-list--row .choice-card {
+    flex: 1 1 0;
+  }
+
+  .confirm-strategy-button {
+    width: auto;
+    min-width: 260px;
+    align-self: flex-end;
+  }
+}
+
+/* ---- MISSION OBJECTIVE compact variant used only on the NEGOTIATION
+   scene: same badge/target classes and colors as the MISSION screen's
+   card, just a narrow label-left/value-right list instead of the boxed
+   target grid, so it reads as the small reference-image panel. ---- */
+.mission-objective--compact {
+  width: 100%;
+  max-width: 100%;
+  align-items: stretch;
+  text-align: left;
+  padding: 14px 16px;
+  gap: 8px;
+}
+
+.mission-objective.mission-objective--compact {
+  background: var(--panel-bg-strong);
+  border: 1px solid rgba(130, 200, 255, 0.28);
+  border-radius: 20px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+}
+
+.mission-objective--compact .mission-objective__badge {
+  text-align: left;
+}
+
+.mission-objective__targets--compact {
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+
+.mission-objective__targets--compact .mission-objective__target {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  gap: 8px;
+}
+
+.mission-objective__targets--compact .mission-objective__target-label {
+  text-align: left;
+}
+
+.mission-objective__targets--compact .mission-objective__target-value {
+  font-size: 13px;
+  color: #F5F7FA;
+  font-weight: 800;
+}
+
+.mission-objective__targets--compact .mission-objective__target {
+  background: rgba(255, 255, 255, 0.03);
+  border: none;
+  border-bottom: 1px solid rgba(130, 200, 255, 0.16);
+  border-radius: 0;
+}
+
+.mission-objective__targets--compact .mission-objective__target:last-child {
+  border-bottom: none;
+}
+
+.mission-objective__targets--compact .mission-objective__target-label {
+  color: #7DD3FC;
+  font-weight: 800;
+}
+
+@media (min-width: 1200px) {
+  .mission-objective--compact {
+    flex: 0 0 240px;
+  }
+}
+
+/* Compact BUYER INTEREST card used only on the NEGOTIATION scene --
+   same classes/colors as before, just tighter padding since it now sits
+   directly under the character instead of spanning the old full-width
+   right column. */
+.turn-buyer-status--compact {
+  padding: 12px 14px;
+}
+
+/* ---- Request: NEGOTIATION의 STRATEGY OPTIONS 카드만 더 짙은 네이비
+   글래스로 바꾼다. PRODUCT SELECT 화면이 공유하는 기본 .choice-card는
+   건드리지 않도록 이 화면 전용 클래스인 .choice-list--row로 범위를
+   좁힌다. hover/선택 상태는 기존 동작이 그대로 보이도록 동일하거나 더
+   높은 우선순위로 다시 선언한다(색/로직 자체는 변경하지 않음). ---- */
+.choice-list--row .choice-card {
+  background: rgba(8, 20, 40, 0.82);
+  border: 1px solid rgba(130, 200, 255, 0.28);
+  border-radius: 20px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+}
+
+.choice-list--row .choice-card__title {
+  font-weight: 800;
+}
+
+.choice-list--row .choice-card__subtitle {
+  color: #CBD5E1;
+  font-weight: 600;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .choice-list--row .choice-card:hover {
+    border-color: rgba(37, 99, 235, 0.55);
+    background: rgba(37, 99, 235, 0.14);
+    box-shadow:
+      0 10px 24px -14px rgba(37, 99, 235, 0.55),
+      0 12px 35px rgba(0, 0, 0, 0.25);
+  }
+}
+
+.choice-list--row .choice-card--selected {
+  background: rgba(37, 99, 235, 0.16);
+  border-color: rgba(37, 99, 235, 0.9);
+  box-shadow:
+    0 0 0 1px rgba(37, 99, 235, 0.35) inset,
+    0 10px 22px -10px rgba(37, 99, 235, 0.45),
+    0 12px 35px rgba(0, 0, 0, 0.25);
+}
+
+/* ---- Request: BUYER PROFILE(캐릭터 아래 이름표)도 같은 다크 네이비
+   글래스로 통일한다. .buyer-identity--featured는 MISSION/BUYER
+   RESPONSE 등도 공유하므로 .decision-card 조상 선택자로 범위를 좁힌다
+   (위 캐릭터 높이 규칙과 같은 패턴). ---- */
+.decision-card .buyer-identity--featured .buyer-identity__text {
+  background: rgba(8, 20, 40, 0.82);
+  border: 1px solid rgba(130, 200, 255, 0.28);
+  border-radius: 20px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.decision-card .buyer-identity__intro {
+  color: #E2E8F0;
+  font-weight: 600;
+}
+
+.turn-buyer-status__concern-chip {
+  color: #93C5FD;
+  background: rgba(37, 99, 235, 0.16);
+  border: 1px solid rgba(147, 197, 253, 0.4);
+}
+
+/* Small market-title block above the character: badge + "{MARKET}
+   MARKET" heading, reusing .mission-badge/.mission-title exactly as
+   MISSION screen does, scaled down to fit the compact single-screen
+   NEGOTIATION layout. */
+.decision-scene__market-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.decision-scene__market-title .mission-badge {
+  font-size: 10.5px;
+  padding: 4px 10px;
+  background: rgba(8, 20, 40, 0.72);
+  border-color: rgba(251, 191, 36, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.decision-scene__market-title .mission-title {
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85), 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+.decision-scene__market-title .mission-title {
+  font-size: clamp(16px, 1.6vw, 20px);
+  gap: 6px;
+}
+
+.decision-scene__market-title .mission-title__flag {
+  width: 22px;
+  height: 15px;
+}
+
 .mission-card__left,
 .mission-card__right,
 .decision-layout__left,
@@ -2350,6 +3219,33 @@
   align-items: center;
   text-align: center;
   gap: clamp(16px, 3vw, 22px);
+}
+
+/* ---- Request: 흩어진 작은 박스 여러 개 대신, 텍스트가 몰린 우측/정보
+   컬럼 전체를 감싸는 하나의 큰 다크 네이비 글래스 패널. 캐릭터가 있는
+   좌측 컬럼(.mission-card__left 등)과 배경 이미지 자체는 이 규칙의
+   대상이 아니다 -- 오직 이미 존재하는 "정보 컬럼" 래퍼만 대상으로
+   한다. ---- */
+.mission-card__right,
+.decision-scene__right-col,
+.final-result-layout__right,
+.info-panel-group {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 24px;
+  padding: clamp(16px, 2.4vw, 24px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 20px 60px -24px rgba(0, 0, 0, 0.55);
+}
+
+.info-panel-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: clamp(14px, 2.6vw, 20px);
 }
 
 .buyer-feedback-columns {
@@ -2405,24 +3301,26 @@
   }
 
   /* ---- Phase 2: MISSION 화면 좌/우 컬럼 사이 구분선 (MISSION 전용) ---- */
-  .mission-card__right {
-    border-left: 1px solid rgba(30, 41, 59, 0.1);
-    padding-left: 28px;
-  }
-
   .market-card,
   .product-card {
     max-width: 1040px;
   }
 
-  .mission-card,
-  .decision-card,
   .final-result-card {
     max-width: 1120px;
   }
 
+  /* ---- Fix: mission-card / decision-card / buyer-card were being
+     capped at 720px by the 640px+ breakpoint above and never widened
+     back up here, unlike market/product/final-result-card. That
+     starved the two-column MISSION/NEGOTIATION/BUYER layout of width
+     on desktop, crushing .decision-layout__right (choice list, result
+     panel, feedback) down to a sliver. Restore full floating-scene
+     width on desktop. ---- */
+  .mission-card,
+  .decision-card,
   .buyer-card {
-    max-width: 760px;
+    max-width: 1400px;
   }
 
   .performance-card {
@@ -2462,6 +3360,67 @@
     align-items: stretch;
     text-align: left;
     min-width: 0;
+  }
+
+  /* ---- Request: NEGOTIATION should read as "background -> big
+     character + big dialogue bubble side by side -> strategy options
+     below", not a left/right dashboard split. Overrides the shared
+     row-split above for .decision-layout only. ---- */
+  .decision-layout {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .decision-layout__left {
+    flex: 1 1 auto;
+    width: 100%;
+    display: flex;
+    flex-flow: row wrap;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .decision-layout__left > .negotiation-dialogue {
+    margin-top: 12px;
+  }
+
+  .decision-layout__left > .buyer-identity {
+    /* .buyer-identity has width:100% as its normal (full-width row)
+       default, which was making it fill the entire row and pushing
+       the dialogue onto its own line below instead of beside the
+       character. Give it the same fixed width the MISSION screen's
+       column already constrains it to, so it sizes predictably
+       (nameplate text wraps inside it) instead of stretching. */
+    width: 340px;
+    flex: 0 0 340px;
+  }
+
+  .decision-layout__left > .negotiation-dialogue {
+    flex: 1 1 360px;
+    min-width: 280px;
+  }
+
+  /* turn-buyer-status always breaks onto its own full-width row under
+     the character+bubble row, regardless of remaining space. */
+  .decision-layout__left > .turn-buyer-status {
+    flex: 1 1 100%;
+  }
+
+  .decision-layout__right {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+
+  /* The buyer bubble now sits to the right of the character instead
+     of below it, so its tail points left toward the character instead
+     of up. */
+  .decision-card .negotiation-dialogue__bubble--buyer .negotiation-dialogue__content::after {
+    top: 28px;
+    left: -10px;
+    right: auto;
+    width: 20px;
+    height: 20px;
+    clip-path: polygon(100% 0%, 100% 100%, 0% 50%);
   }
 
   .mission-hud {
@@ -2628,12 +3587,1144 @@
   left: 8%;
   right: 8%;
   height: 1px;
-  background: rgba(30, 41, 59, 0.12);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 @media (min-width: 1200px) {
   .product-card .choice-list {
     gap: 18px;
     align-items: stretch;
+  }
+}
+
+/* ================================================================
+   STEP 2 (이미지 적용): 연결해둔 이미지 에셋(world-map.png,
+   buyer-*.png)을 실제 화면에 적용한다. 게임 로직/데이터/화면 전환에는
+   전혀 관여하지 않으며, 이미 계산된 값이나 상태(outcome 문자열 등)를
+   그대로 CSS class/변수 이름으로만 재사용한다.
+   ================================================================ */
+
+/* ---- START: world-map.png 히어로 배경 + 가독성을 위한 어두운 오버레이.
+   지도 위에 새 텍스트/국가 라벨은 추가하지 않는다(순수 배경 이미지). ---- */
+.start-screen.start-screen--hero {
+  /* ---- Request: START screen must read as bright/vivid, not dark.
+     Overlay dropped from 0.55/0.72/0.86 to a much lighter gradient --
+     just enough at the very bottom to keep the CTA area legible. ---- */
+  background-image:
+    linear-gradient(180deg, rgba(8, 13, 26, 0.08) 0%, rgba(8, 13, 26, 0.18) 55%, rgba(8, 13, 26, 0.4) 100%),
+    var(--start-hero-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* ---- MARKET SELECT: world-map.png를 아주 옅은 보조 배경으로만 사용한다.
+   기존 장식용 radial-gradient들을 반투명 버전으로 다시 쌓아 지도가
+   은은하게만 비치게 하고, 카드(.market-card)는 불투명 배경이라 가독성에
+   영향이 없다. ---- */
+.market-screen.market-screen--hero {
+  /* ---- Request: START 화면과 완전히 동일한 배경(이미지/오버레이/위치)을
+     쓴다. --market-hero-image 자체가 이제 START_BG_IMAGE를 가리키므로
+     (App.jsx), 오버레이도 START의 것과 값까지 동일하게 맞춘다. ---- */
+  background-image:
+    linear-gradient(180deg, rgba(8, 13, 26, 0.08) 0%, rgba(8, 13, 26, 0.18) 55%, rgba(8, 13, 26, 0.4) 100%),
+    var(--market-hero-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* ---- MARKET SELECT: 카드를 더 또렷한 "게임 카드"처럼 보이게 하는
+   추가 보강. 기존 background-color(rgba(30,41,59,0.05))는 그대로 두고
+   accent 톤 radial glow만 위에 얹는다(값은 이미 있는 --market-accent-tint
+   변수를 그대로 사용). 플래그도 살짝 키운다. ---- */
+.market-option {
+  background-image: radial-gradient(circle at 50% -20%, var(--market-accent-tint, transparent) 0%, transparent 72%);
+}
+
+.market-option__flag {
+  width: 44px;
+  height: 30px;
+}
+
+/* ---- BUYER CHARACTER: BuyerIdentityCard 아바타 자리에 국가별 실제
+   캐릭터 이미지(투명 PNG)를 보여준다. market.id로만 키를 맺는 조회
+   (MARKET_BUYER_IMAGES)는 JSX 쪽에서 이미 보장되며, 여기서는 시각적
+   크기/비율/클리핑만 다룬다. object-fit: contain으로 비율 왜곡 없이,
+   overflow: visible로 카드 경계에 잘리지 않게 한다. ---- */
+.buyer-identity--character {
+  gap: 14px;
+}
+
+.buyer-identity__avatar--character {
+  width: clamp(64px, 9vw, 88px);
+  height: clamp(64px, 9vw, 88px);
+  border-radius: 20px;
+  background: linear-gradient(160deg, var(--market-accent-tint, rgba(37, 99, 235, 0.12)) 0%, rgba(255, 255, 255, 0.96) 100%);
+  overflow: visible;
+  position: relative;
+}
+
+.buyer-identity__character {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: bottom center;
+  filter: drop-shadow(0 6px 10px rgba(30, 41, 59, 0.25));
+  animation: buyer-character-in 0.4s ease both;
+}
+
+.buyer-identity__flag--badge {
+  position: absolute;
+  bottom: -4px;
+  right: -6px;
+  width: 22px;
+  height: 15px;
+  border-radius: 3px;
+  margin: 0;
+  box-shadow: 0 0 0 2px #FFFFFF, 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+@keyframes buyer-character-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ---- BUYER CHARACTER (featured): MISSION / BUYER RESPONSE / BUYER'S
+   NEXT MOVE / FINAL RESULT / CONTRACT OUTCOME에서 캐릭터를 "TRADE BRIEF
+   / [캐릭터] / 이름 / 역할 / 시장" 구조의 세로형 히어로로 크게 보여준다.
+   기존 buyer-identity__name/__role/__concept-badge/__intro 데이터와
+   레이아웃 클래스는 그대로 재사용하고 배치만 세로로 바꾼다. ---- */
+.buyer-identity--featured {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  padding: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+
+.buyer-identity--featured .buyer-identity__text {
+  align-items: center;
+  padding: 10px 20px;
+  border-radius: 14px;
+  background: rgba(8, 13, 26, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Large standing character: no boxed avatar frame, the character PNG
+   floats directly on the background at a size close to the viewport
+   height (roughly 40-60vh), matching a real game scene rather than a
+   small profile-photo card. */
+.buyer-identity--featured .buyer-identity__avatar,
+.buyer-identity--featured .buyer-identity__avatar--character {
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.buyer-identity--featured .buyer-identity__character {
+  height: clamp(320px, 64vh, 720px);
+  max-height: 70vh;
+  width: auto;
+  object-fit: contain;
+}
+
+.decision-card .buyer-identity--featured .buyer-identity__character {
+  height: clamp(250px, 50vh, 540px);
+  max-height: 56vh;
+}
+
+.buyer-identity--featured .buyer-identity__flag--badge {
+  width: 30px;
+  height: 20px;
+  bottom: 6px;
+  right: 6px;
+}
+
+.buyer-identity--featured .buyer-identity__intro {
+  text-align: center;
+}
+
+.buyer-identity--featured .buyer-identity__concept-badge {
+  align-self: center;
+}
+
+@media (max-width: 480px) {
+  .buyer-identity--featured .buyer-identity__character {
+    height: clamp(220px, 40vh, 360px);
+  }
+}
+
+/* ---- CONTRACT OUTCOME: 캐릭터 카드에 outcome(성공/진행중/거절) 색
+   강조를 추가한다. outcome 판정/문자열은 그대로이며, 이미 다른 화면의
+   mission-badge--success 등과 같은 색 토큰만 재사용한다. ---- */
+.contract-outcome-buyer {
+  width: 100%;
+  animation: turn-fade-in 0.3s ease 0.1s both;
+}
+
+.contract-outcome-buyer--success .buyer-identity {
+  border-color: rgba(74, 222, 128, 0.45);
+  box-shadow: 0 0 24px -14px rgba(74, 222, 128, 0.55);
+}
+
+.contract-outcome-buyer--continues .buyer-identity {
+  border-color: rgba(251, 191, 36, 0.45);
+  box-shadow: 0 0 24px -14px rgba(251, 191, 36, 0.55);
+}
+
+.contract-outcome-buyer--rejected .buyer-identity {
+  border-color: rgba(248, 113, 113, 0.45);
+  box-shadow: 0 0 24px -14px rgba(248, 113, 113, 0.55);
+}
+
+/* ================================================================
+   GAME UI REDESIGN (design-reference.png 구조/정보 계층 참고): 아래
+   블록들은 모두 새로 추가된 클래스이며, 기존 클래스의 정의/값은
+   전혀 건드리지 않는다. 게임 로직/데이터/화면 전환과는 무관한
+   구조(JSX)/시각(CSS) 보강만 담당한다.
+   ================================================================ */
+
+.market-explore-layout {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+@media (max-width: 860px) {
+  .market-explore-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.market-map-panel {
+  position: relative;
+  min-height: 220px;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--shadow-card);
+  animation: screen-in 0.35s ease both;
+}
+
+.market-map-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 12, 28, 0.28);
+  pointer-events: none;
+}
+
+.market-map-panel__image {
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+  object-fit: cover;
+  display: block;
+}
+
+.market-map-panel__badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  padding: 6px 14px;
+  border-radius: var(--radius-chip);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #FFFFFF;
+  background: rgba(8, 13, 26, 0.55);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.4);
+}
+
+.market-explore-layout .market-intel-panel {
+  height: 100%;
+  background: rgba(10, 25, 50, 0.8);
+  border: 1px solid rgba(150, 210, 255, 0.2);
+  border-radius: 20px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.market-intel-panel--empty {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+  min-height: 220px;
+  background: rgba(10, 25, 50, 0.8);
+  border-style: dashed;
+  border-color: rgba(150, 210, 255, 0.28);
+}
+
+.market-intel-panel__placeholder {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #D8E1EE;
+}
+
+.market-weight-bars {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.market-weight-bar {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.market-weight-bar__label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #D8E1EE;
+}
+
+.market-weight-bar__track {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.12);
+  overflow: hidden;
+}
+
+.market-weight-bar__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #1D4ED8, #38BDF8);
+  transition: width 0.5s ease;
+}
+
+.start-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 28px;
+  flex-wrap: wrap;
+}
+
+.start-topbar__brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.start-topbar__logo {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.start-topbar__wordmark {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: #F8FAFC;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+}
+
+.start-topbar__stages {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.start-topbar__stage {
+  padding: 5px 12px;
+  border-radius: var(--radius-chip);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: rgba(248, 250, 252, 0.85);
+  background: rgba(248, 250, 252, 0.12);
+  border: 1px solid rgba(248, 250, 252, 0.22);
+  backdrop-filter: blur(4px);
+}
+
+@media (max-width: 640px) {
+  .start-topbar {
+    padding: 14px 16px;
+  }
+
+  .start-topbar__stages {
+    display: none;
+  }
+}
+
+.start-hero__tagline {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #D8E1EE;
+  text-align: center;
+}
+
+.choice-card__select-hint {
+  margin-top: 6px;
+  align-self: flex-end;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--product-accent, #2563EB);
+  opacity: 0.85;
+}
+
+.choice-card--selected .choice-card__select-hint {
+  opacity: 1;
+}
+
+.product-card .choice-card {
+  border-color: var(--product-accent-border, rgba(255, 255, 255, 0.14));
+  background: var(--product-accent-tint, rgba(255, 255, 255, 0.05));
+}
+
+.product-card .choice-card__letter {
+  background: linear-gradient(135deg, var(--product-accent-tint, rgba(37, 99, 235, 0.12)) 0%, #FFFFFF 100%);
+  border: 2px solid var(--product-accent, #2563EB);
+  color: var(--product-accent, #2563EB);
+  font-size: 20px;
+  border-radius: 12px;
+}
+
+.product-card .choice-card--selected {
+  border-color: var(--product-accent, #2563EB);
+  background: var(--product-accent-tint, rgba(37, 99, 235, 0.1));
+}
+
+.product-card .choice-card--selected::after {
+  background: linear-gradient(135deg, var(--product-accent, #2563EB) 0%, #fbbf24 130%);
+}
+
+.buyer-identity__traits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+  justify-content: flex-start;
+}
+
+.buyer-identity--featured .buyer-identity__traits {
+  justify-content: center;
+}
+
+.buyer-identity__trait-chip {
+  padding: 4px 10px;
+  border-radius: var(--radius-chip);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--market-accent, #2563EB);
+  background: var(--market-accent-tint, rgba(37, 99, 235, 0.08));
+  border: 1px solid var(--market-accent-border, rgba(37, 99, 235, 0.22));
+}
+
+.turn-buyer-status {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: left;
+  animation: turn-fade-in 0.3s ease 0.1s both;
+}
+
+.turn-buyer-status__interest {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.turn-buyer-status__label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #D8E1EE;
+}
+
+.turn-buyer-status__value {
+  font-size: 13px;
+  font-weight: 800;
+  color: #F8FAFC;
+}
+
+.turn-buyer-status__concerns {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.turn-buyer-status__concerns-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #D8E1EE;
+  margin-right: 2px;
+}
+
+.turn-buyer-status__concern-chip {
+  padding: 3px 10px;
+  border-radius: var(--radius-chip);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #2563EB;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.confetti-burst {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: -10%;
+  width: 8px;
+  height: 14px;
+  border-radius: 2px;
+  opacity: 0;
+  animation-name: confetti-fall;
+  animation-timing-function: ease-in;
+  animation-iteration-count: 1;
+  animation-fill-mode: both;
+}
+
+@keyframes confetti-fall {
+  0% {
+    opacity: 0;
+    transform: translateY(0) rotate(0deg);
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(340px) rotate(360deg);
+  }
+}
+
+.confetti-piece:nth-child(1) {
+  left: 0.0%;
+  background: #38bdf8;
+  animation-delay: 0.0s;
+  animation-duration: 1.8s;
+  transform: rotate(47deg);
+}
+
+.confetti-piece:nth-child(2) {
+  left: 5.9%;
+  background: #fbbf24;
+  animation-delay: 0.12s;
+  animation-duration: 1.98s;
+  transform: rotate(94deg);
+}
+
+.confetti-piece:nth-child(3) {
+  left: 11.8%;
+  background: #4ade80;
+  animation-delay: 0.24s;
+  animation-duration: 2.16s;
+  transform: rotate(141deg);
+}
+
+.confetti-piece:nth-child(4) {
+  left: 17.6%;
+  background: #f472b6;
+  animation-delay: 0.36s;
+  animation-duration: 2.34s;
+  transform: rotate(188deg);
+}
+
+.confetti-piece:nth-child(5) {
+  left: 23.5%;
+  background: #a78bfa;
+  animation-delay: 0.48s;
+  animation-duration: 2.52s;
+  transform: rotate(235deg);
+}
+
+.confetti-piece:nth-child(6) {
+  left: 29.4%;
+  background: #fb923c;
+  animation-delay: 0.6s;
+  animation-duration: 1.8s;
+  transform: rotate(282deg);
+}
+
+.confetti-piece:nth-child(7) {
+  left: 35.3%;
+  background: #38bdf8;
+  animation-delay: 0.0s;
+  animation-duration: 1.98s;
+  transform: rotate(329deg);
+}
+
+.confetti-piece:nth-child(8) {
+  left: 41.2%;
+  background: #fbbf24;
+  animation-delay: 0.12s;
+  animation-duration: 2.16s;
+  transform: rotate(16deg);
+}
+
+.confetti-piece:nth-child(9) {
+  left: 47.1%;
+  background: #4ade80;
+  animation-delay: 0.24s;
+  animation-duration: 2.34s;
+  transform: rotate(63deg);
+}
+
+.confetti-piece:nth-child(10) {
+  left: 52.9%;
+  background: #f472b6;
+  animation-delay: 0.36s;
+  animation-duration: 2.52s;
+  transform: rotate(110deg);
+}
+
+.confetti-piece:nth-child(11) {
+  left: 58.8%;
+  background: #a78bfa;
+  animation-delay: 0.48s;
+  animation-duration: 1.8s;
+  transform: rotate(157deg);
+}
+
+.confetti-piece:nth-child(12) {
+  left: 64.7%;
+  background: #fb923c;
+  animation-delay: 0.6s;
+  animation-duration: 1.98s;
+  transform: rotate(204deg);
+}
+
+.confetti-piece:nth-child(13) {
+  left: 70.6%;
+  background: #38bdf8;
+  animation-delay: 0.0s;
+  animation-duration: 2.16s;
+  transform: rotate(251deg);
+}
+
+.confetti-piece:nth-child(14) {
+  left: 76.5%;
+  background: #fbbf24;
+  animation-delay: 0.12s;
+  animation-duration: 2.34s;
+  transform: rotate(298deg);
+}
+
+.confetti-piece:nth-child(15) {
+  left: 82.4%;
+  background: #4ade80;
+  animation-delay: 0.24s;
+  animation-duration: 2.52s;
+  transform: rotate(345deg);
+}
+
+.confetti-piece:nth-child(16) {
+  left: 88.2%;
+  background: #f472b6;
+  animation-delay: 0.36s;
+  animation-duration: 1.8s;
+  transform: rotate(32deg);
+}
+
+.confetti-piece:nth-child(17) {
+  left: 94.1%;
+  background: #a78bfa;
+  animation-delay: 0.48s;
+  animation-duration: 1.98s;
+  transform: rotate(79deg);
+}
+
+.confetti-piece:nth-child(18) {
+  left: 100.0%;
+  background: #fb923c;
+  animation-delay: 0.6s;
+  animation-duration: 2.16s;
+  transform: rotate(126deg);
+}
+
+.performance-card .mission-badge--rejected {
+  animation:
+    buyer-score-reveal 0.35s ease 0.05s both,
+    outcome-rejected-shake 0.4s ease 0.45s 1;
+}
+
+@keyframes outcome-rejected-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-4px);
+  }
+  40% {
+    transform: translateX(3px);
+  }
+  60% {
+    transform: translateX(-2px);
+  }
+  80% {
+    transform: translateX(1px);
+  }
+}
+
+.final-score-row {
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.score-grade-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 92px;
+  padding: 18px 20px;
+  border-radius: 20px;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.28);
+  animation: buyer-score-reveal 0.4s ease 0.1s both;
+}
+
+.score-grade-badge__label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  color: #D8E1EE;
+}
+
+.score-grade-badge__letter {
+  font-size: clamp(32px, 8vw, 44px);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.score-grade-badge--s {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
+.score-grade-badge--s .score-grade-badge__letter {
+  background: linear-gradient(135deg, #38bdf8 0%, #2563EB 50%, #7C3AED 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.score-grade-badge--a {
+  background: rgba(74, 222, 128, 0.12);
+  border-color: rgba(74, 222, 128, 0.4);
+}
+
+.score-grade-badge--a .score-grade-badge__letter {
+  color: #16A34A;
+}
+
+.score-grade-badge--b {
+  background: rgba(251, 191, 36, 0.12);
+  border-color: rgba(251, 191, 36, 0.4);
+}
+
+.score-grade-badge--b .score-grade-badge__letter {
+  color: #D97706;
+}
+
+.score-grade-badge--c {
+  background: rgba(251, 146, 60, 0.12);
+  border-color: rgba(251, 146, 60, 0.4);
+}
+
+.score-grade-badge--c .score-grade-badge__letter {
+  color: #EA580C;
+}
+
+.score-grade-badge--d {
+  background: rgba(248, 113, 113, 0.12);
+  border-color: rgba(248, 113, 113, 0.4);
+}
+
+.score-grade-badge--d .score-grade-badge__letter {
+  color: #DC2626;
+}
+
+/* ---- Request: 새 등급 체계(A 90~100 / B 80~89 / C 70~79 / D 60~69 /
+   F 0~59)에서 가장 낮은 F 등급 전용 배지 색상. 기존 s/a/b/c/d 색상표는
+   그대로 두고 F만 추가한다. ---- */
+.score-grade-badge--f {
+  background: rgba(220, 38, 38, 0.16);
+  border-color: rgba(220, 38, 38, 0.5);
+}
+
+.score-grade-badge--f .score-grade-badge__letter {
+  color: #EF4444;
+}
+
+/* ---- Request: 등급별 결과(제목+설명) 패널. FINAL RESULT의 다른 카드와
+   같은 다크 글래스 톤을 쓰고, 등급 색상만 위 score-grade-badge와 같은
+   팔레트를 재사용한다(A/B=긍정, C=주의, D/F=경고). ---- */
+.grade-result-panel {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: clamp(18px, 3vw, 24px);
+  border-radius: 18px;
+  background: var(--panel-bg-strong);
+  border: 1px solid var(--panel-border);
+  text-align: center;
+  animation: screen-in 0.35s ease both;
+}
+
+.grade-result-panel__badge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: #D8E1EE;
+}
+
+.grade-result-panel__title {
+  margin: 0;
+  font-size: clamp(20px, 4vw, 26px);
+  font-weight: 900;
+  color: #F8FAFC;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.grade-result-panel__description {
+  margin: 0;
+  max-width: 640px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #D8E1EE;
+}
+
+.grade-result-panel--a {
+  border-color: rgba(74, 222, 128, 0.45);
+}
+
+.grade-result-panel--a .grade-result-panel__title {
+  color: #4ADE80;
+}
+
+.grade-result-panel--b {
+  border-color: rgba(251, 191, 36, 0.45);
+}
+
+.grade-result-panel--b .grade-result-panel__title {
+  color: #FBBF24;
+}
+
+.grade-result-panel--c {
+  border-color: rgba(251, 146, 60, 0.45);
+}
+
+.grade-result-panel--c .grade-result-panel__title {
+  color: #FB923C;
+}
+
+.grade-result-panel--d {
+  border-color: rgba(248, 113, 113, 0.45);
+}
+
+.grade-result-panel--d .grade-result-panel__title {
+  color: #F87171;
+}
+
+.grade-result-panel--f {
+  border-color: rgba(220, 38, 38, 0.55);
+}
+
+.grade-result-panel--f .grade-result-panel__title {
+  color: #FCA5A5;
+}
+
+@media (max-width: 480px) {
+  .final-score-row {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+/* ---- GAME UI REDESIGN v2 (에셋 재구성): MARKET SELECT 이후 화면
+   (MISSION/PRODUCT SELECT/TURN/BUYER RESPONSE/BUYER'S NEXT MOVE/CONTRACT
+   OUTCOME/FINAL RESULT)이 선택된 국가의 실제 배경 이미지를 시네마틱
+   배경으로 쓴다. START(.start-screen--hero)/MARKET SELECT
+   (.market-screen--hero)와 동일한 기법(어두운 오버레이 그라디언트 +
+   cover/center)이며, 각 화면의 카드(.mission-card 등)는 불투명 흰
+   배경이라 텍스트 가독성에는 전혀 영향이 없다. ---- */
+/* ---- Bug fix: the block above used to paint background-image
+   directly on the screen element (.decision-screen / .mission-screen /
+   .buyer-screen etc), which only has min-height: 100svh -- its real
+   height grows with content (e.g. picking a choice reveals more
+   below). Because background-size:cover re-fits against whatever the
+   element's current box is, any height change made the same image
+   re-crop, which read as the background "zooming" on click/hover.
+   Fix: move the image onto a position:fixed, viewport-sized ::before
+   layer that is completely decoupled from this element's content
+   height, so it never resizes or moves no matter what happens inside
+   the screen. Only the character/bubbles/HUD (normal content, z-index
+   0/1) animate; this layer never does. ---- */
+.game-screen--country-bg {
+  /* position:relative alone does NOT establish a stacking context, so
+     the ::before layer's z-index:-1 was escaping to the document
+     root's stacking context instead of stacking locally against this
+     element's own background -- on some screens that meant it painted
+     behind an opaque ancestor and the country image effectively
+     vanished. Setting z-index here creates a local stacking context so
+     ::before (-1) reliably sits above this element's own background
+     and below the normal-flow HUD/content (z-index 0/1). */
+  position: relative;
+  z-index: 0;
+}
+
+/* ---- Request: after lightening the overlay above so the country
+   photo actually shows through, the HUD chips that used to rely on
+   that heavy dark backdrop for contrast (mission badge/objective,
+   info rows, stat cards, feedback panels, etc. -- most were a bare
+   4-10% tint with no blur) read as washed out against a bright photo.
+   Rather than re-darkening the whole screen, add blur + a bit more
+   opacity to just these text-bearing chips, per "text 가독성이 필요한
+   부분에만 아주 약한 gradient/glass 효과". Colors/borders/layout/data
+   are untouched -- contrast only. ---- */
+.mission-badge,
+.mission-objective,
+.mission-objective__target,
+.online-platform-panel,
+.mission-ready-badge,
+.back-button,
+.stat-card,
+.mission-hud__info,
+.mission-hud__turn,
+.ai-feedback-panel,
+.turn-buyer-status,
+.negotiation-sidebar {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.game-screen--country-bg .result-panel {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: rgba(8, 13, 26, 0.4);
+}
+
+.mission-card .mission-info__row {
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(180, 220, 255, 0.16);
+  padding: 8px 4px;
+  border-radius: 0;
+}
+
+.mission-badge {
+  background: rgba(8, 20, 40, 0.75);
+}
+
+.mission-objective {
+  background: var(--panel-bg-strong);
+  border-color: rgba(251, 191, 36, 0.4);
+}
+
+.mission-objective__target {
+  background: none;
+}
+
+.online-platform-panel {
+  background: none;
+}
+
+.mission-ready-badge {
+  background: rgba(74, 222, 128, 0.22);
+}
+
+.back-button {
+  background: rgba(8, 13, 26, 0.45);
+}
+
+.mission-hud__info,
+.mission-hud__turn,
+.turn-buyer-status {
+  background: rgba(8, 20, 40, 0.82);
+  border-radius: 20px;
+  border-color: rgba(130, 200, 255, 0.28);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+}
+
+.ai-feedback-panel {
+  background: rgba(8, 13, 26, 0.4);
+}
+
+.game-screen--country-bg::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.34) 55%, rgba(0, 0, 0, 0.4) 100%),
+    var(--game-hero-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transform: none !important;
+  transition: none !important;
+  pointer-events: none;
+}
+
+/* ---- Request: NEGOTIATION 화면(.decision-screen)만 배경을 "현재보다
+   약간만" 더 어둡게 한다 -- 다른 화면의 오버레이는 그대로 둔다. 고정
+   레이어 메커니즘은 위 규칙과 동일하고 그라디언트 stop 값만 살짝
+   올렸다(균일한 검정을 강하게 씌우지 않는다는 요청 그대로 유지). ---- */
+.decision-screen.game-screen--country-bg::before {
+  background-image:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.34) 0%, rgba(0, 0, 0, 0.38) 55%, rgba(0, 0, 0, 0.44) 100%),
+    var(--game-hero-image);
+}
+
+/* ---- START screen redesign: simple title/intro scene. No character,
+   no speech bubbles, no big card -- content sits directly on the
+   full-bleed background. ---- */
+.start-scene {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(20px, 4vh, 40px);
+  width: 100%;
+  min-height: 100svh;
+  padding: clamp(88px, 12vh, 140px) clamp(20px, 6vw, 72px) clamp(32px, 6vh, 64px);
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.start-scene__season {
+  padding: 7px 16px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  color: #e2e8f0;
+  background: rgba(8, 13, 26, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(6px);
+  animation: start-fade-in 0.5s ease 0.05s both;
+}
+
+.start-scene__titleblock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  animation: start-fade-in 0.6s ease 0.15s both;
+}
+
+.start-scene__heading {
+  margin: 0;
+  font-size: clamp(40px, 7vw, 88px);
+  font-weight: 900;
+  line-height: 1.04;
+  letter-spacing: 0.01em;
+  color: #f8fafc;
+  text-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+}
+
+.start-scene__modes {
+  margin: 0;
+  font-size: clamp(13px, 1.6vw, 18px);
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  color: rgba(226, 232, 240, 0.85);
+}
+
+.start-scene__cta {
+  margin-top: 12px;
+  width: auto;
+  min-width: 260px;
+  padding: 17px 36px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #22d3ee 0%, #2563eb 100%);
+  box-shadow: 0 20px 40px -12px rgba(37, 99, 235, 0.65);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .start-scene__cta:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 24px 46px -12px rgba(34, 211, 238, 0.7);
+  }
+}
+
+@media (max-width: 640px) {
+  .start-scene__cta {
+    width: 100%;
+  }
+}
+
+/* ---- 애니메이션 접근성: 이번 단계에서 새로 추가한 연출만 대상으로
+   prefers-reduced-motion을 존중한다(기존 애니메이션은 손대지 않음). ---- */
+@media (prefers-reduced-motion: reduce) {
+  .buyer-identity__character,
+  .contract-outcome-buyer {
+    animation: none;
+  }
+
+  .market-map-panel,
+  .turn-buyer-status,
+  .score-grade-badge,
+  .confetti-piece,
+  .performance-card .mission-badge--rejected {
+    animation: none;
+  }
+
+  .negotiation-dialogue__bubble {
+    animation: none;
   }
 }
